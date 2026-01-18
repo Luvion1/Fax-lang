@@ -1,21 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="foxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#FF8C00;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#FF4500;stop-opacity:1" />
+    <linearGradient id="chibiGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFB347;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
     </linearGradient>
   </defs>
-  <!-- Background Circle for a modern look -->
-  <circle cx="256" cy="256" r="240" fill="#f8f9fa" stroke="#e9ecef" stroke-width="2"/>
+  <!-- Background Circle (Soft Pastels) -->
+  <circle cx="256" cy="256" r="240" fill="#FFF5E6" />
   
-  <!-- Artistic Fox Head -->
-  <path d="M256 80c-20 0-45 15-60 30-15 15-25 40-25 40s-10-5-20-5c-15 0-30 10-30 25 0 20 20 45 45 60 5 3 10 5 15 7-5 15-5 35 5 55 15 30 45 50 70 50s55-20 70-50c10-20 10-40 5-55 5-2 10-4 15-7 25-15 45-40 45-60 0-15-15-25-30-25-10 0-20 5-20 5s-10-25-25-40c-15-15-40-30-60-30z" fill="url(#foxGrad)"/>
+  <!-- Large Round Head (Chibi Style) -->
+  <path d="M256 120c-80 0-140 60-140 130 0 40 20 80 50 100-5 10-20 30-40 40 25 0 50-10 65-25 20 10 45 15 65 15s45-5 65-15c15 15 40 25 65 25-20-10-35-30-40-40 30-20 50-60 50-100 0-70-60-130-140-130z" fill="url(#chibiGrad)"/>
   
-  <!-- Detailed Fur and Features -->
-  <path d="M256 340c-30 0-60-20-75-45 15 10 40 15 75 15s60-5 75-15c-15 25-45 45-75 45z" fill="#fff" opacity="0.8"/>
-  <path d="M210 190a15 15 0 1 0 0-30 15 15 0 0 0 0 30zM302 190a15 15 0 1 0 0-30 15 15 0 0 0 0 30z" fill="#1a1a1b"/>
-  <path d="M256 240c-5 0-10-5-10-10s5-10 10-10 10 5 10 10-5 10-10 10z" fill="#1a1a1b"/>
+  <!-- Ears (Rounded and Fluffy) -->
+  <path d="M160 140l-40-60c-5-8 5-15 12-10l70 45" fill="#FF8C00" stroke="#E67E22" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M352 140l40-60c5-8-5-15-12-10l-70 45" fill="#FF8C00" stroke="#E67E22" stroke-width="5" stroke-linejoin="round"/>
   
-  <!-- Tail Accent -->
-  <path d="M380 320c0 0 40 20 40 60s-40 80-80 80-60-30-60-30 20-10 40-30 60-80 60-80z" fill="url(#foxGrad)" opacity="0.6"/>
+  <!-- Inner Ears (Pinkish) -->
+  <path d="M150 130l-20-30c-2-3 2-6 5-4l35 20" fill="#FFD1DC"/>
+  <path d="M362 130l20-30c2-3-2-6-5-4l-35 20" fill="#FFD1DC"/>
+
+  <!-- Face - Huge Shiny Eyes -->
+  <circle cx="190" cy="260" r="35" fill="#2C3E50"/>
+  <circle cx="180" cy="250" r="12" fill="#FFFFFF"/> <!-- Sparkle 1 -->
+  <circle cx="195" cy="275" r="5" fill="#FFFFFF"/>  <!-- Sparkle 2 -->
+  
+  <circle cx="322" cy="260" r="35" fill="#2C3E50"/>
+  <circle cx="312" cy="250" r="12" fill="#FFFFFF"/> <!-- Sparkle 1 -->
+  <circle cx="327" cy="275" r="5" fill="#FFFFFF"/>  <!-- Sparkle 2 -->
+  
+  <!-- Blush (Imut/Cute Factor) -->
+  <ellipse cx="140" cy="290" rx="25" ry="15" fill="#FFB6C1" opacity="0.6"/>
+  <ellipse cx="372" cy="290" rx="25" ry="15" fill="#FFB6C1" opacity="0.6"/>
+  
+  <!-- Tiny Nose and Mouth -->
+  <path d="M256 280l-5 8h10z" fill="#1a1a1b"/>
+  <path d="M240 300c5 5 10 5 16 0s11-5 16 0" fill="none" stroke="#1a1a1b" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- White Chest Fluff -->
+  <path d="M256 365c-40 0-70-20-70-40s30-10 70-10 70-10 70 10-30 40-70 40z" fill="#FFFFFF"/>
 </svg>

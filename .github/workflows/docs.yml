@@ -40,6 +40,9 @@ jobs:
           cp book/index.html site/
           cp book/syntax.html site/
           cp assets/logo.svg site/
+          # Copy custom concepts pages
+          mkdir -p site/concepts
+          cp book/concepts/*.html site/concepts/
           touch site/.nojekyll
 
       - name: Upload artifact

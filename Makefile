@@ -20,10 +20,10 @@ clean:
 	rm -f examples/mvp examples/logic examples/logic_if
 
 docs-serve:
-	cd docs && mdbook serve --open
+	cd book && mdbook serve --open
 
 docs-build:
-	cd docs && mdbook build
+	cd book && mdbook build
 
 install: build
 	mkdir -p $(BINDIR)

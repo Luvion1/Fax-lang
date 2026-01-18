@@ -10,6 +10,6 @@ build-dir = "book"
 
 [output.html]
 git-repository-url = "https://github.com/Luvion1/Fax-lang"
-edit-url-template = "https://github.com/Luvion1/Fax-lang/edit/main/docs/{path}"
+edit-url-template = "https://github.com/Luvion1/Fax-lang/edit/main/book/{path}"
 
 [preprocessor.links]

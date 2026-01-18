@@ -79,11 +79,11 @@ npm run dev ast examples/mvp.fx
 ---
 
 ## 📖 Documentation
-The official documentation is built with **mdBook** and is available in the `docs/` directory.
+The official documentation is built with **mdBook** and is available in the `book/` directory.
 
 To serve documentation locally:
 ```bash
-cd docs
+cd book
 mdbook serve --open
 ```
 

@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'docs/**'
+      - 'book/**'
       - '.github/workflows/docs.yml'
 
 permissions:
@@ -32,12 +32,12 @@ jobs:
 
       - name: Build Documentation
         run: |
-          mdbook build docs
+          mdbook build book
           mkdir -p site
           # Copy the entire built book to a subdirectory
-          cp -r docs/book site/book
+          cp -r book/book site/book
           # Copy landing page and logo to the root
-          cp docs/index.html site/
+          cp book/index.html site/
           cp assets/logo.svg site/
           touch site/.nojekyll
 

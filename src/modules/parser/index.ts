@@ -1,8 +1,8 @@
-import { Lexer } from "../lexer/index.ts";
-import { TokenType } from "../lexer/types.ts";
-import type { Token } from "../lexer/types.ts";
-import { NodeType } from "./ast/nodes.ts";
-import type { ASTNode } from "./ast/nodes.ts";
+import { Lexer } from "../lexer/index.js";
+import { TokenType } from "../lexer/types.js";
+import type { Token } from "../lexer/types.js";
+import { NodeType } from "./ast/nodes.js";
+import type { ASTNode } from "./ast/nodes.js";
 
 // Precedence levels
 const LOWEST = 1;

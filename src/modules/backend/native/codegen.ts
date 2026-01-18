@@ -1,7 +1,7 @@
-import { NodeType } from "../../parser/ast/nodes.ts";
-import type { ASTNode } from "../../parser/ast/nodes.ts";
-import { Arm64Emitter } from "./arm64.ts";
-import { ElfGenerator } from "./elf.ts";
+import { NodeType } from "../../parser/ast/nodes.js";
+import type { ASTNode } from "../../parser/ast/nodes.js";
+import { Arm64Emitter } from "./arm64.js";
+import { ElfGenerator } from "./elf.js";
 
 export class NativeCodegen {
   private emitter: Arm64Emitter;

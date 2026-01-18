@@ -1,5 +1,5 @@
-import { Scope } from "./scopes/scope-manager.ts";
-import { Logger } from "../../shared/logger/index.ts";
+import { Scope } from "./scopes/scope-manager.js";
+import { Logger } from "../../shared/logger/index.js";
 
 export const MemoryPlacement = {
     Stack: "Stack",

@@ -1,4 +1,4 @@
-import { TokenType } from "../types.ts";
+import { TokenType } from "../types.js";
 
 export const KEYWORDS: Record<string, TokenType> = {
   let: TokenType.Let,

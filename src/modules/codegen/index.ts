@@ -1,8 +1,8 @@
-import { NodeType } from "../parser/ast/nodes.ts";
-import type { ASTNode } from "../parser/ast/nodes.ts";
-import { LLVMModule } from "../llvm/module.ts";
-import { LLVMBuilder } from "../llvm/builder.ts";
-import type { LLVMType } from "../llvm/types.ts";
+import { NodeType } from "../parser/ast/nodes.js";
+import type { ASTNode } from "../parser/ast/nodes.js";
+import { LLVMModule } from "../llvm/module.js";
+import { LLVMBuilder } from "../llvm/builder.js";
+import type { LLVMType } from "../llvm/types.js";
 
 export class CodeGenerator {
   private module: LLVMModule;

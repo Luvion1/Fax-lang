@@ -1,5 +1,5 @@
-import { Opcode, ICmpCond } from './types.ts';
-import type { LLVMType, LLVMValue } from './types.ts';
+import { Opcode, ICmpCond } from './types.js';
+import type { LLVMType, LLVMValue } from './types.js';
 
 export class LLVMBuilder {
   private buffer: string[] = [];

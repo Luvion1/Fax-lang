@@ -3,10 +3,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync, execSync } from 'node:child_process';
-import { Lexer } from './modules/lexer/index.ts';
-import { Parser } from './modules/parser/index.ts';
-import { CodeGenerator } from './modules/codegen/index.ts';
-import { SemanticChecker } from './modules/analysis/checker.ts';
+import { Lexer } from './modules/lexer/index.js';
+import { Parser } from './modules/parser/index.js';
+import { CodeGenerator } from './modules/codegen/index.js';
+import { SemanticChecker } from './modules/analysis/checker.js';
 
 function findTool(names: string[]): string | null {
   for (const name of names) {
@@ -93,7 +93,7 @@ async function main() {
     }
 
   } catch (error: any) {
-    const { ErrorReporter } = await import('./shared/logger/error-reporter.ts');
+    const { ErrorReporter } = await import('./shared/logger/error-reporter.js');
     ErrorReporter.report(error, source, file);
     process.exit(1);
   }

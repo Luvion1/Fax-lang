@@ -1,4 +1,4 @@
-import type { LLVMType, LLVMValue } from './types.ts';
+import type { LLVMType, LLVMValue } from './types.js';
 
 export class LLVMModule {
   private name: string;

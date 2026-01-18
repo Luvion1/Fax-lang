@@ -1,7 +1,7 @@
-import { TokenType } from "./types.ts";
-import type { Token } from "./types.ts";
-import { KEYWORDS } from "./constants/keywords.ts";
-import { CompilerError } from "../../shared/errors/compiler-error.ts";
+import { TokenType } from "./types.js";
+import type { Token } from "./types.js";
+import { KEYWORDS } from "./constants/keywords.js";
+import { CompilerError } from "../../shared/errors/compiler-error.js";
 
 export class Lexer {
   private input: string;

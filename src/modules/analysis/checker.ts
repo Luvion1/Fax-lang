@@ -1,8 +1,8 @@
-import { MemoryManager } from "./memory-manager.ts";
-import { NodeType } from "../parser/ast/nodes.ts";
-import type { ASTNode } from "../parser/ast/nodes.ts";
-import { CompilerError } from "../../shared/errors/compiler-error.ts";
-import { Logger } from "../../shared/logger/index.ts";
+import { MemoryManager } from "./memory-manager.js";
+import { NodeType } from "../parser/ast/nodes.js";
+import type { ASTNode } from "../parser/ast/nodes.js";
+import { CompilerError } from "../../shared/errors/compiler-error.js";
+import { Logger } from "../../shared/logger/index.js";
 
 export class SemanticChecker {
     private memManager: MemoryManager = new MemoryManager();

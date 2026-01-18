@@ -28,6 +28,8 @@ export const Opcode = {
   Mul: 'mul',
   SDiv: 'sdiv', // Signed division
   UDiv: 'udiv', // Unsigned division
+  And: 'and',
+  Or: 'or',
 
   // Memory
   Alloca: 'alloca',
@@ -50,3 +52,5 @@ export const ICmpCond = {
   Sgt: 'sgt', // signed greater than
   Slt: 'slt', // signed less than
 } as const;
+
+export type ICmpCond = typeof ICmpCond[keyof typeof ICmpCond];

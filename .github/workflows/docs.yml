@@ -33,10 +33,10 @@ jobs:
       - name: Build Documentation
         run: |
           mdbook build docs
-          # Move mdbook output to a subdirectory named 'book' inside the final artifact
-          mkdir -p site/book
-          mv docs/book/* site/book/
-          # Copy custom landing page and assets to the root of the site
+          mkdir -p site
+          # Copy the entire built book to a subdirectory
+          cp -r docs/book site/book
+          # Copy landing page and logo to the root
           cp docs/index.html site/
           cp assets/logo.svg site/
           touch site/.nojekyll

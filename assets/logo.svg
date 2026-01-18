@@ -1,68 +1,63 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="furGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#FF9A44;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#FF6D24;stop-opacity:1" />
+    <!-- Gradients for realistic fur depth -->
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E67E22;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#D35400;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A04000;stop-opacity:1" />
     </linearGradient>
-    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="10" />
-      <feOffset dx="0" dy="10" result="offsetblur" />
-      <feComponentTransfer><feFuncA type="linear" slope="0.3"/></feComponentTransfer>
-      <feMerge>
-        <feMergeNode />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
+    <radialGradient id="eyeGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#F1C40F;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#D4AC0D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+    </radialGradient>
+    <filter id="furTexture" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
     </filter>
   </defs>
+
+  <!-- Background Glow -->
+  <circle cx="256" cy="256" r="240" fill="#ffffff" opacity="0.05" />
+
+  <!-- Main Face Shape (Realistic Contours) -->
+  <path d="M256 60c-15 0-40 20-70 50-30 30-50 80-50 130 0 60 40 120 120 160 80-40 120-100 120-160 0-50-20-100-50-130-30-30-55-50-70-50z" fill="url(#bodyGrad)" />
+
+  <!-- Ears with Internal Detail -->
+  <path d="M140 150l-60-90c-5-8 5-15 15-10l90 60c-20 15-35 25-45 40z" fill="#873600" />
+  <path d="M372 150l60-90c5-8-5-15-15-10l-90 60c20 15 35 25 45 40z" fill="#873600" />
+  <path d="M145 145l-40-60c2 10 10 20 20 30" fill="#FAD7A0" opacity="0.4" />
   
-  <!-- Background Soft Circle -->
-  <circle cx="256" cy="256" r="230" fill="#FFF8F0" />
+  <!-- Muzzle/Cheeks with Multi-layered White Fur -->
+  <path d="M140 240c0 50 40 100 116 130 76-30 116-80 116-130-10-20-40-40-70-40-20 20-30 30-46 30s-26-10-46-30c-30 0-60 20-70 40z" fill="#ffffff" opacity="0.9" />
+  <path d="M256 370c-40 0-80-30-100-60 20 20 60 40 100 40s80-20 100-40c-20 30-60 60-100 60z" fill="#EAECEE" />
 
-  <!-- Fluffy Tail (Big and Detailed) -->
-  <path d="M340 320c40-20 100 0 100 70 0 60-50 90-100 90s-80-30-80-60 30-80 80-100z" fill="url(#furGrad)" filter="url(#softShadow)"/>
-  <path d="M440 390c0 40-20 60-50 70 20-10 30-30 30-50s-10-40-30-50c30 10 50 30 50 30z" fill="#FFFFFF" opacity="0.9"/>
-
-  <!-- Body (Small and Cute) -->
-  <path d="M256 320c-50 0-90 40-90 90 0 40 30 70 90 70s90-30 90-70c0-50-40-90-90-90z" fill="url(#furGrad)" />
-  <path d="M256 330c-30 0-50 20-50 50s20 50 50 50 50-20 50-50-20-50-50-50z" fill="#FFFFFF" opacity="0.8"/>
-
-  <!-- Large Round Head -->
-  <path d="M256 100c-90 0-150 70-150 140 0 60 40 110 90 130-10 15-10 35 0 35 20 0 40-20 50-35h20c10 15 30 35 50 35 10 0 10-20 0-35 50-20 90-70 90-130 0-70-60-140-150-140z" fill="url(#furGrad)" filter="url(#softShadow)"/>
-
-  <!-- Ears with Fur Tufts -->
-  <path d="M150 120l-50-80c-5-10 10-15 18-5l60 65" fill="#FF6D24" stroke="#D35400" stroke-width="4"/>
-  <path d="M362 120l50-80c5-10-10-15-18-5l-60 65" fill="#FF6D24" stroke="#D35400" stroke-width="4"/>
-  <path d="M145 110l-20-30c-2-4 4-6 7-2l25 25" fill="#FFD1DC"/>
-  <path d="M367 110l20-30c2-4-4-6-7-2l-25 25" fill="#FFD1DC"/>
-
-  <!-- Cheeks / Muzzle (White and Fluffy) -->
-  <path d="M106 240c0 40 40 70 80 70 20 0 50-10 70-30 20 20 50 30 70 30 40 0 80-30 80-70 0-30-30-50-70-50s-70 20-80 40c-10-20-40-40-80-40s-70 20-70 50z" fill="#FFFFFF"/>
-
-  <!-- Eyes (Complex Shiny Chibi) -->
+  <!-- Intense Realistic Eyes -->
   <g>
-    <circle cx="180" cy="240" r="38" fill="#2C3E50"/>
-    <circle cx="170" cy="225" r="14" fill="#FFFFFF"/> <!-- Main Sparkle -->
-    <circle cx="190" cy="255" r="7" fill="#FFFFFF" opacity="0.6"/> <!-- Soft Sparkle -->
-    <path d="M150 220c-5-5-15 0-10 10" fill="none" stroke="#2C3E50" stroke-width="3" stroke-linecap="round"/> <!-- Eyelash -->
+    <!-- Left Eye -->
+    <ellipse cx="190" cy="225" rx="22" ry="18" fill="#1a1a1b" />
+    <ellipse cx="190" cy="225" rx="18" ry="14" fill="url(#eyeGrad)" />
+    <path d="M190 215c-10 0-10 20 0 20s10-20 0-20z" fill="#000000" /> <!-- Pupil -->
+    <circle cx="185" cy="220" r="4" fill="#ffffff" opacity="0.8" /> <!-- Reflection -->
   </g>
   <g>
-    <circle cx="332" cy="240" r="38" fill="#2C3E50"/>
-    <circle cx="322" cy="225" r="14" fill="#FFFFFF"/> <!-- Main Sparkle -->
-    <circle cx="342" cy="255" r="7" fill="#FFFFFF" opacity="0.6"/> <!-- Soft Sparkle -->
-    <path d="M362 220c5-5 15 0 10 10" fill="none" stroke="#2C3E50" stroke-width="3" stroke-linecap="round"/> <!-- Eyelash -->
+    <!-- Right Eye -->
+    <ellipse cx="322" cy="225" rx="22" ry="18" fill="#1a1a1b" />
+    <ellipse cx="322" cy="225" rx="18" ry="14" fill="url(#eyeGrad)" />
+    <path d="M322 215c-10 0-10 20 0 20s10-20 0-20z" fill="#000000" /> <!-- Pupil -->
+    <circle cx="317" cy="220" r="4" fill="#ffffff" opacity="0.8" /> <!-- Reflection -->
   </g>
 
-  <!-- Blush -->
-  <ellipse cx="130" cy="285" rx="30" ry="18" fill="#FF9999" opacity="0.4"/>
-  <ellipse cx="382" cy="285" rx="30" ry="18" fill="#FF9999" opacity="0.4"/>
+  <!-- Realistic Nose & Whiskers -->
+  <path d="M240 310h32l-16 12z" fill="#17202A" />
+  <g stroke="#17202A" stroke-width="0.5" opacity="0.3">
+    <line x1="180" y1="320" x2="100" y2="300" />
+    <line x1="180" y1="330" x2="100" y2="340" />
+    <line x1="332" y1="320" x2="412" y2="300" />
+    <line x1="332" y1="330" x2="412" y2="340" />
+  </g>
 
-  <!-- Tiny Heart Nose -->
-  <path d="M256 265c-2-3-8-3-10 0s5 10 10 12c5-2 12-9 10-12s-8-3-10 0z" fill="#1a1a1b"/>
-  
-  <!-- W-shaped Mouth -->
-  <path d="M236 285c5 5 10 5 15 0 5 5 10 5 15 0" fill="none" stroke="#1a1a1b" stroke-width="3" stroke-linecap="round"/>
-
-  <!-- Paws (Tiny White Mittens) -->
-  <circle cx="210" cy="460" r="20" fill="#FFFFFF" filter="url(#softShadow)"/>
-  <circle cx="302" cy="460" r="20" fill="#FFFFFF" filter="url(#softShadow)"/>
+  <!-- Fur Highlights (Detailed strokes) -->
+  <path d="M256 80c-20 5-40 20-50 40" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.2" />
+  <path d="M150 280c-10 10-20 30-20 50" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.2" />
 </svg>

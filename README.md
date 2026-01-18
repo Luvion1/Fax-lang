@@ -1,6 +1,12 @@
-# <img src="assets/logo.svg" width="64" height="64" align="center" /> Fax-lang
+<p align="center">
+  <img src="assets/logo.svg" width="200" height="200" />
+</p>
 
-**The Fax Programming Language Reference Implementation**
+<h1 align="center">Fax-lang</h1>
+
+<p align="center">
+  <strong>The Fax Programming Language Reference Implementation</strong>
+</p>
 
 Fax is a systems programming language designed for extreme memory safety and deterministic state transitions through its unique **Life-Force** and **Contractual State Machine** systems.
 

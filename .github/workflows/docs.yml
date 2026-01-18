@@ -27,13 +27,20 @@ jobs:
           curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.37/mdbook-v0.4.37-x86_64-unknown-linux-gnu.tar.gz | tar -xz -C bin
           echo "$(pwd)/bin" >> $GITHUB_PATH
 
-      - name: Build with mdBook
-        run: mdbook build docs
+      - name: Build Documentation
+        run: |
+          mdbook build docs
+          # Move mdbook output to a subdirectory named 'book' inside the final artifact
+          mkdir -p site/book
+          mv docs/book/* site/book/
+          # Copy custom landing page and assets to the root of the site
+          cp docs/index.html site/
+          cp assets/logo.svg site/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/book
+          path: site
 
       - name: Deploy to GitHub Pages
         id: deployment

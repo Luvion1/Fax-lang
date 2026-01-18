@@ -1,3 +1,7 @@
+---
+layout: none
+---
+{% raw %}
 {% raw %}
 📘 FAX LANGUAGE SYNTAX REFERENCE
 
@@ -3015,4 +3019,5 @@ mod tests {
 }
 ```
 
+{% endraw %}
 {% endraw %}

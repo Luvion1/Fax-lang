@@ -36,8 +36,9 @@ jobs:
           mkdir -p site
           # Copy the entire built book to a subdirectory
           cp -r book/book site/book
-          # Copy landing page and logo to the root
+          # Copy custom landing page, syntax guide and logo to the root
           cp book/index.html site/
+          cp book/syntax.html site/
           cp assets/logo.svg site/
           touch site/.nojekyll
 

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fax-lang | Syntax Reference</title>
+    <link rel="icon" type="image/svg+xml" href="./logo.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --fax-orange: #FF8C00;
+            --fax-dark: #2C3E50;
+            --fax-light: #FFF8F0;
+        }
+        body {
+            background-color: var(--fax-light);
+            font-family: 'Segoe UI', sans-serif;
+            color: var(--fax-dark);
+        }
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        .content-header {
+            padding: 60px 0;
+            background: linear-gradient(135deg, #FFE4B5 0%, #FFF8F0 100%);
+            margin-bottom: 40px;
+            border-bottom: 1px solid #eee;
+        }
+        .syntax-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        pre {
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--fax-orange);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+        .back-to-top:hover {
+            transform: scale(1.1);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="./index.html">
+                <img src="./logo.svg" alt="Logo" width="30" height="30" class="d-inline-block align-text-top me-2">
+                Fax-lang
+            </a>
+            <div class="ms-auto">
+                <a href="./index.html" class="text-dark me-3 text-decoration-none">Home</a>
+                <a href="./book/index.html" class="btn btn-outline-dark rounded-pill px-4">Full Book</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="content-header text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold">Syntax Reference</h1>
+            <p class="lead text-muted">A quick guide to Fax-lang keywords, types, and structures.</p>
+        </div>
+    </header>
+
+    <main class="container mb-5">
+        <div class="syntax-container">
+            <h2>Basic Syntax</h2>
+            <p>Every Fax program starts with a <code>main</code> function.</p>
+            <pre><code class="language-fax">fn main() {
+    println("Hello, World!");
+}</code></pre>
+
+            <h2 class="mt-5">Variables</h2>
+            <p>Use <code>let</code> for immutability and <code>let mut</code> for mutable variables.</p>
+            <pre><code class="language-fax">let x = 10;          // Immutable
+let mut y = 20;      // Mutable
+y = y + x;</code></pre>
+
+            <h2 class="mt-5">State Machines</h2>
+            <pre><code class="language-fax">state_machine Device {
+    state Off {
+        fn turn_on() -> On { ... }
+    }
+    state On {
+        fn turn_off() -> Off { ... }
+    }
+}</code></pre>
+
+            <h2 class="mt-5">Memory Life-Force</h2>
+            <p>Variables decay over time based on their usage.</p>
+            <pre><code class="language-fax">let x = 100;
+// Read costs 0.02 Life-Force
+let y = x; 
+// x now has 0.98 Life-Force remaining</code></pre>
+            
+            <div class="alert alert-info mt-5">
+                <i class="fas fa-info-circle me-2"></i> For the full 3000-line specification, please refer to the <a href="./book/syntax.html">technical manual</a>.
+            </div>
+        </div>
+    </main>
+
+    <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
+
+    <footer class="text-center py-5">
+        <p class="text-muted">Fax-lang Syntax Reference &copy; 2026</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script>
+        // Simple custom highlighter for Fax-lang
+        Prism.languages.fax = Prism.languages.extend('clike', {
+            'keyword': /\b(let|mut|shadow|fn|state_machine|state|any|if|else|while|return|const|static|type|struct|enum|impl|trait|dyn|match|loop|for|break|continue|async|await|gen|yield|pub|mod|use|where)\b/,
+            'number': /\b(0x[\da-fA-F]+|0b[01]+|0o[0-7]+|\d+(_\d+)*(\.\d+)?)\b/,
+            'operator': /[-+*/%=<>!&|^]=?|&&|\|\||->|=>|\.\.=?/
+        });
+    </script>
+</body>
+</html>

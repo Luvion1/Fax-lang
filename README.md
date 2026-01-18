@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="assets/logo.svg" width="160" height="160" />
+  <img src="assets/logo.svg" width="180" height="180" />
 </p>
 
 <h1 align="center">Fax-lang</h1>
 
 <p align="center">
-  <strong>Modern Systems Programming Language with Life-Force Memory Management</strong>
+  <strong>A Modern Systems Programming Language with Life-Force Memory Management</strong>
 </p>
 
 <p align="center">
@@ -16,19 +16,19 @@
 
 ---
 
-## 🦊 Apa itu Fax-lang?
+## 🦊 What is Fax-lang?
 
-Fax-lang adalah bahasa pemrograman tingkat rendah yang dirancang untuk performa tinggi dengan paradigma manajemen memori yang revolusioner. Dibangun di atas LLVM, Fax menjamin keamanan memori tanpa menggunakan *Garbage Collector* atau *Borrow Checker* tradisional, melainkan menggunakan sistem **Life-Force**.
+Fax-lang is a high-performance systems programming language built on top of LLVM. It introduces a revolutionary approach to memory safety called **Life-Force Tracking**, allowing for deterministic memory management without the overhead of a Garbage Collector or the complexity of a traditional Borrow Checker.
 
-## ✨ Fitur Unggulan
+## ✨ Core Pillars
 
-### 1. Sistem Memori Life-Force (Rule 2)
-Setiap variabel memiliki "energi" yang berkurang saat digunakan.
+### 1. Life-Force Memory System (Rule 2)
+Every variable is born with "energy" that decays through usage.
 - **Read**: -0.02 | **Write**: -0.08
-- Jika energi habis, variabel tidak bisa diakses lagi. Ini menjamin pembersihan memori yang deterministik.
+- When life-force reaches zero, the variable is automatically reclaimed. This ensures memory safety through a deterministic, usage-based lifecycle.
 
-### 2. State Machine Kontraktual (Rule 4)
-*State machine* adalah warga kelas satu. Transisi antar status diperiksa secara ketat saat kompilasi.
+### 2. Contractual State Machines (Rule 4)
+State machines are first-class citizens. Transitions are verified at compile-time to prevent illegal states.
 ```fax
 state_machine Connection {
     state Closed {
@@ -38,20 +38,20 @@ state_machine Connection {
 ```
 
 ### 3. Shadow & Mirroring (Rule 1)
-Akses data melalui *read-only views* (Shadow) yang secara cerdas membuat salinan (*Mirror*) hanya pada bagian yang berubah.
+Manage data access via **Shadows** (read-only views) that lazily create **Mirrors** only for modified segments, optimizing cache locality and performance.
 
 ### 4. Unified Memory Space (Rule 3)
-Kompilator secara otomatis menentukan apakah data harus berada di **Stack**, **Heap**, atau **Hybrid** berdasarkan pola aksesnya.
+The compiler automatically analyzes access patterns to decide whether data should reside on the **Stack**, **Heap**, or a **Hybrid** of both.
 
 ---
 
-## 🛠 Instalasi
+## 🛠 Getting Started
 
-### Prasyarat
-- Node.js (v18+)
-- LLVM (llc & clang v14/18)
+### Prerequisites
+- **Node.js** (v18 or newer)
+- **LLVM** (llc & clang v14/18)
 
-### Setup Proyek
+### Installation
 ```bash
 git clone https://github.com/Luvion1/Fax-lang.git
 cd Fax-lang
@@ -60,38 +60,38 @@ npm install
 
 ---
 
-## 🚀 Cara Penggunaan
+## 🚀 Usage
 
-### Kompilasi Kode
+### Compiling Programs
 ```bash
-# Membangun file biner dari kode .fx
+# Build a binary from a .fx file
 npm run dev build examples/mvp.fx
 
-# Menjalankan hasil kompilasi
+# Execute the output
 ./examples/mvp
 ```
 
-### Analisis AST
+### AST Visualization
 ```bash
 npm run dev ast examples/mvp.fx
 ```
 
 ---
 
-## 📖 Dokumentasi
-Dokumentasi lengkap yang dibangun dengan **mdBook** tersedia di folder `docs/`. Jika Anda menggunakan GitHub, dokumentasi ini otomatis terbit di GitHub Pages.
+## 📖 Documentation
+The official documentation is built with **mdBook** and is available in the `docs/` directory.
 
-Jalankan secara lokal:
+To serve documentation locally:
 ```bash
 cd docs
 mdbook serve --open
 ```
 
-## 🤝 Kontribusi
-Kami sangat terbuka bagi kontributor! Silakan ajukan *Issue* untuk melaporkan bug atau *Pull Request* untuk fitur baru. Pastikan untuk mengikuti standar kode yang ada.
+## 🤝 Contributing
+Contributions are welcome! Please feel free to submit a Pull Request or open an Issue to discuss potential changes.
 
 ---
 
 <p align="center">
-  Dibuat dengan ❤️ oleh <a href="https://github.com/Luvion1">Luvion1</a>
+  Built with ❤️ by <a href="https://github.com/Luvion1">Luvion1</a>
 </p>

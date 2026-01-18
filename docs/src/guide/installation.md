@@ -2,13 +2,13 @@
 
 ## Prerequisites
 
-To build the Fax-lang compiler, you need:
+To build and run the Fax-lang compiler, you will need the following tools:
 
 - **Node.js** (v18 or newer)
-- **TypeScript** and **ts-node**
-- **LLVM 14 or 18** (specifically `llc` and `clang`)
+- **TypeScript** & **ts-node**
+- **LLVM Toolchain** (Specifically `llc` and `clang`, version 14 or 18)
 
-## Building the Compiler
+## Setting Up the Compiler
 
 1. Clone the repository:
    ```bash
@@ -16,7 +16,7 @@ To build the Fax-lang compiler, you need:
    cd Fax-lang
    ```
 
-2. Install dependencies:
+2. Install the necessary dependencies:
    ```bash
    npm install
    ```
@@ -26,25 +26,25 @@ To build the Fax-lang compiler, you need:
    npm run build
    ```
 
-## Compiling Fax Programs
+## Compiling Your First Program
 
-You can run the compiler directly using `ts-node`:
+You can compile Fax source files (`.fx`) using the provided dev script:
 
 ```bash
 npm run dev build your_file.fx
 ```
 
-## Documentation (mdBook)
+## Building the Documentation
 
 The documentation is built using [mdBook](https://github.com/rust-lang/mdBook).
 
-To install mdBook:
-```bash
-cargo install mdbook
-```
+1. Install mdBook:
+   ```bash
+   cargo install mdbook
+   ```
 
-To serve the documentation locally:
-```bash
-cd docs
-mdbook serve --open
-```
+2. Serve the documentation locally:
+   ```bash
+   cd docs
+   mdbook serve --open
+   ```

@@ -36,6 +36,7 @@ jobs:
           # Copy custom landing page and assets to the root of the site
           cp docs/index.html site/
           cp assets/logo.svg site/
+          touch site/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

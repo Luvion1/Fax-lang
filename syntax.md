@@ -1,3 +1,4 @@
+{% raw %}
 📘 FAX LANGUAGE SYNTAX REFERENCE
 
 📌 1. BASIC SYNTAX
@@ -3014,3 +3015,4 @@ mod tests {
 }
 ```
 
+{% endraw %}

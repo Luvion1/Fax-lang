@@ -14,6 +14,7 @@
 
 # Advanced Concepts
 
+- [The Four Rules](concepts/the_four_rules.md)
 - [State Machines (Contractual States)](concepts/state_machines.md)
 - [Memory Management: Life-Force](concepts/life_force.md)
 - [Shadow & Mirroring](concepts/shadow_mirroring.md)

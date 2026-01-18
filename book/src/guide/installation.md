@@ -45,6 +45,6 @@ The documentation is built using [mdBook](https://github.com/rust-lang/mdBook).
 
 2. Serve the documentation locally:
    ```bash
-   cd docs
+   cd book
    mdbook serve --open
    ```

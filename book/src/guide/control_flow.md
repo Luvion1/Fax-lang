@@ -29,7 +29,9 @@ while i < 10 {
 }
 ```
 
-## Match Expressions
+## Match Expressions (Experimental)
+
+> **Note:** `match` expressions are currently in the experimental phase and may not be fully supported by all backends.
 
 `match` provides powerful pattern matching, especially useful when working with **State Machines** or Enums.
 

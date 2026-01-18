@@ -1,11 +1,11 @@
 {
   "name": "fax-lang",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "The Fax Programming Language Reference Implementation",
   "type": "module",
   "main": "src/index.ts",
   "bin": {
-    "fax": "./src/index.ts"
+    "fax": "./bin/fax.js"
   },
   "scripts": {
     "dev": "node --loader ts-node/esm src/index.ts",

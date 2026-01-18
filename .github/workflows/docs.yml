@@ -18,22 +18,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Rust Toolchain
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache mdBook
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin/mdbook
-          key: ${{ runner.os }}-mdbook
 
       - name: Install mdBook
         run: |
-          if ! command -v mdbook &> /dev/null; then
-            cargo install mdbook
-          fi
+          mkdir bin
+          curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.37/mdbook-v0.4.37-x86_64-unknown-linux-gnu.tar.gz | tar -xz -C bin
+          echo "$(pwd)/bin" >> $GITHUB_PATH
 
-      - name: Build Documentation
+      - name: Build with mdBook
         run: mdbook build docs
 
       - name: Upload artifact

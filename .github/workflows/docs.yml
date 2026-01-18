@@ -33,16 +33,7 @@ jobs:
       - name: Build Documentation
         run: |
           mdbook build book
-          mkdir -p site
-          # Copy the entire built book to a subdirectory
-          cp -r book/book site/book
-          # Copy custom landing page, syntax guide and logo to the root
-          cp book/index.html site/
-          cp book/syntax.html site/
-          cp assets/logo.svg site/
-          # Copy custom concepts pages
-          mkdir -p site/concepts
-          cp book/concepts/*.html site/concepts/
+          # Ensure .nojekyll exists so GitHub Pages doesn't ignore the 'book' directory
           touch site/.nojekyll
 
       - name: Upload artifact

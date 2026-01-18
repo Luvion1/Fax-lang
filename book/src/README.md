@@ -1,5 +1,7 @@
 # Introduction to Fax-lang
 
+<img src="logo.svg" alt="Fax Logo" width="100">
+
 Welcome to the **Fax Programming Language** documentation.
 
 Fax is a systems programming language designed for **extreme memory safety** and **deterministic state transitions** without a garbage collector or traditional borrow checker.

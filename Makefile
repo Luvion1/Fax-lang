@@ -23,6 +23,7 @@ docs-serve:
 	cd book && mdbook serve --open
 
 docs-build:
+	cp assets/logo.svg book/src/logo.svg
 	cd book && mdbook build
 
 install: build

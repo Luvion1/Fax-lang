@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="kawaiiGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFB347;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Soft Shadow for Kawaii Sticker Look -->
+  <circle cx="256" cy="270" r="230" fill="#000" opacity="0.05"/>
+
+  <!-- Fluffy Big Tail -->
+  <path d="M360 300c60-20 120 20 120 90s-50 100-110 100-90-40-90-80c0-50 40-90 80-110z" fill="#FF8C00" />
+  <path d="M480 390c0 40-30 70-70 80 20-10 40-30 40-50s-10-40-40-50c40 10 70 20 70 20z" fill="#FFFFFF" />
+
+  <!-- Round Chibi Body -->
+  <circle cx="256" cy="380" r="100" fill="url(#kawaiiGrad)" />
+  <path d="M256 460c-40 0-70-20-70-50s30-20 70-20 70 10 70 20-30 50-70 50z" fill="#FFFFFF" opacity="0.8"/>
+
+  <!-- Oversized Kawaii Head -->
+  <circle cx="256" cy="220" r="160" fill="url(#kawaiiGrad)" />
+
+  <!-- Big Rounded Ears -->
+  <path d="M140 100l-50-60c-10-15 15-20 25-10l65 50" fill="#FF8C00" stroke="#E67E22" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M372 100l50-60c10-15-15-20-25-10l-65 50" fill="#FF8C00" stroke="#E67E22" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M150 90l-20-25c-3-4 5-8 8-4l30 20" fill="#FFD1DC"/>
+  <path d="M362 90l20-25c3-4-5-8-8-4l-30 20" fill="#FFD1DC"/>
+
+  <!-- Fluffy White Cheeks -->
+  <path d="M110 240c0 50 60 80 146 80s146-30 146-80-60-60-146-60-146 10-146 60z" fill="#FFFFFF"/>
+
+  <!-- Large Sparkling Kawaii Eyes -->
+  <g>
+    <circle cx="180" cy="230" r="40" fill="#2C3E50"/>
+    <circle cx="165" cy="215" r="15" fill="#FFFFFF"/> 
+    <circle cx="195" cy="245" r="7" fill="#FFFFFF" opacity="0.6"/>
+  </g>
+  <g>
+    <circle cx="332" cy="230" r="40" fill="#2C3E50"/>
+    <circle cx="317" cy="215" r="15" fill="#FFFFFF"/> 
+    <circle cx="347" cy="245" r="7" fill="#FFFFFF" opacity="0.6"/>
+  </g>
+
+  <!-- Blush (Pink Ovals) -->
+  <ellipse cx="120" cy="280" rx="30" ry="18" fill="#FFB6C1" opacity="0.7"/>
+  <ellipse cx="392" cy="280" rx="30" ry="18" fill="#FFB6C1" opacity="0.7"/>
+
+  <!-- Tiny Nose and 'w' Mouth -->
+  <path d="M256 250l-6 8h12z" fill="#1a1a1b"/>
+  <path d="M230 275c10 10 20 10 26 0s16 10 26 0" fill="none" stroke="#1a1a1b" stroke-width="4" stroke-linecap="round"/>
+</svg>

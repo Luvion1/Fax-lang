@@ -1,12 +1,11 @@
 [book]
 authors = ["Luvion1"]
 language = "en"
-multilingual = false
 src = "src"
 title = "The Fax-lang Book"
 
 [build]
-build-dir = "book"
+build-dir = "../site/book"
 
 [output.html]
 git-repository-url = "https://github.com/Luvion1/Fax-lang"

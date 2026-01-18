@@ -7,9 +7,17 @@ dist/
 *.tmp.ll
 *.tmp.o
 .tmp.*
+examples/mvp
+examples/logic
+examples/logic_if
+examples/complex_sm
+examples/fail_sm
+examples/hello_fn
+examples/conn
+examples/shadow_exhaustion
 
 # Docs
-docs/book/
+site/book/
 
 # OS
 .DS_Store

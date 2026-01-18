@@ -1,6 +1,6 @@
-import { Lexer } from "./src/modules/lexer/index.ts";
-import { Parser } from "./src/modules/parser/index.ts";
-import { NodeType } from "./src/modules/parser/ast/nodes.ts";
+import { Lexer } from "../src/modules/lexer/index.ts";
+import { Parser } from "../src/modules/parser/index.ts";
+import { NodeType } from "../src/modules/parser/ast/nodes.ts";
 
 function runTests() {
   console.log("Running FAX-LANG System Tests...\n");

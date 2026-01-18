@@ -22,4 +22,4 @@
 ---
 
 - [Compiler Internals](concepts/internals.md)
-- [Syntax Reference](../syntax.md)
+- [Syntax Reference](syntax.md)

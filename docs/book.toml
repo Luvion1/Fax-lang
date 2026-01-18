@@ -1,0 +1,12 @@
+[book]
+authors = ["Luvion1"]
+language = "en"
+multilingual = false
+src = "src"
+title = "The Fax-lang Book"
+
+[output.html]
+git-repository-url = "https://github.com/Luvion1/Fax-lang"
+edit-url-template = "https://github.com/Luvion1/Fax-lang/edit/main/docs/{path}"
+
+[preprocessor.links]

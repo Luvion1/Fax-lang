@@ -33,7 +33,10 @@ jobs:
       - name: Build Documentation
         run: |
           mdbook build book
-          # Ensure .nojekyll exists so GitHub Pages doesn't ignore the 'book' directory
+          # Copy the root landing page and assets into the site folder for deployment
+          cp index.html site/
+          cp -r assets site/
+          # Ensure .nojekyll exists
           touch site/.nojekyll
 
       - name: Upload artifact

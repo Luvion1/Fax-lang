@@ -52,6 +52,15 @@ The compiler automatically analyzes access patterns to decide whether data shoul
 - **LLVM** (llc & clang v14/18)
 
 ### Installation
+
+You can install the Fax-lang compiler directly from **NPM**:
+
+```bash
+npm install -g fax-lang
+```
+
+Or for local development:
+
 ```bash
 git clone https://github.com/Luvion1/Fax-lang.git
 cd Fax-lang
@@ -62,13 +71,16 @@ npm install
 
 ## 🚀 Usage
 
-### Compiling Programs
+### Using the global command
+If installed via NPM:
+```bash
+fax build examples/mvp.fx
+```
+
+### Compiling Programs (Local)
 ```bash
 # Build a binary from a .fx file
 npm run dev build examples/mvp.fx
-
-# Execute the output
-./examples/mvp
 ```
 
 ### AST Visualization

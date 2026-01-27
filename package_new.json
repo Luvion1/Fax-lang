@@ -1,0 +1,54 @@
+{
+  "name": "fax-lang",
+  "version": "0.1.0",
+  "description": "An industrial-strength programming language designed as a safety layer for C++",
+  "main": "compiler/main.js",
+  "scripts": {
+    "build": "cargo build --workspace",
+    "test": "cargo test --workspace && jest compiler/parser",
+    "lint": "cargo clippy && eslint src/",
+    "format": "cargo fmt && prettier --write src/"
+  },
+  "keywords": ["language", "compiler", "safety", "c++"],
+  "author": "Fax-lang Team",
+  "license": "MIT",
+  "dependencies": {
+    "tslib": "^2.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "typescript": "^4.7.0",
+    "ts-node": "^10.0.0",
+    "jest": "^28.0.0",
+    "@types/jest": "^28.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^2.7.0"
+  },
+  "compilerConfig": {
+    "lexer": {
+      "language": "rust",
+      "path": "compiler/lexer"
+    },
+    "parser": {
+      "language": "typescript",
+      "path": "compiler/parser"
+    },
+    "checker": {
+      "language": "go",
+      "path": "compiler/checker"
+    },
+    "analyzer": {
+      "language": "rust",
+      "path": "compiler/analyzer"
+    },
+    "transpiler": {
+      "language": "python",
+      "path": "compiler/transpiler"
+    }
+  },
+  "buildConfig": {
+    "outputDir": "build",
+    "target": "cpp",
+    "optimizationLevel": "O2"
+  }
+}

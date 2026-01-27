@@ -1,0 +1,17 @@
+# Dependencies for Fax-lang compiler
+# Core dependencies
+eslint
+jest
+prettier
+
+# Build tools
+@babel/core
+@babel/preset-env
+webpack
+webpack-cli
+
+# Utilities
+chalk
+commander
+fs-extra
+glob

@@ -1,0 +1,5 @@
+fn main() {
+    let ok: int = 10;
+    let err: int = 20; // Ini akan memicu error modern
+    println(ok);
+}

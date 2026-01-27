@@ -1,0 +1,20 @@
+fn main() {
+  let numbers: int[] = [10, 20, 30, 40, 50];
+  let sum: int = 0;
+  
+  println("Iterating through array:");
+  for (let i: int = 0; i < 5; i = i + 1) {
+    println("Element at index", i, "is", numbers[i]);
+    sum = sum + numbers[i];
+  }
+  
+  println("Total sum:", sum);
+  
+  if (sum > 100) {
+    println("Sum is greater than 100");
+  } else {
+    println("Sum is not greater than 100");
+  }
+}
+
+main();

@@ -1,0 +1,29 @@
+# Node.js
+node_modules/
+npm-debug.log*
+dist/
+build/
+
+# Rust
+target/
+Cargo.lock
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Compiler Artifacts
+tokens.json
+ast.json
+checked_ast.json
+analyzed_ast.json
+output.cpp
+*.out
+*.exe
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

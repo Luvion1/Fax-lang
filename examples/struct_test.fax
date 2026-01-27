@@ -1,0 +1,27 @@
+struct Point {
+  x: int,
+  y: int
+}
+
+fn create_point(x: int, y: int) -> Point {
+  let p: Point;
+  p.x = x;
+  p.y = y;
+  return p;
+}
+
+fn main() {
+  let p1: Point = create_point(10, 20);
+  let p2: Point;
+  p2.x = 30;
+  p2.y = 40;
+  
+  println("Point 1:", p1.x, p1.y);
+  println("Point 2:", p2.x, p2.y);
+  
+  let dist_x = p2.x - p1.x;
+  let dist_y = p2.y - p1.y;
+  println("Distance:", dist_x, dist_y);
+}
+
+main();

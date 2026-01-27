@@ -1,0 +1,26 @@
+fn factorial(n: int) -> int {
+  if (n <= 1) {
+    return 1;
+  }
+  return n * factorial(n - 1);
+}
+
+fn main() {
+  let name: string = "Fax-lang";
+  let version: float = 0.1;
+  println("Welcome to", name, "v", version);
+  
+  let i: int = 1;
+  while (i <= 5) {
+    if (i % 2 == 0) {
+      println(i, "is even");
+    } else {
+      println(i, "is odd");
+    }
+    i = i + 1;
+  }
+  
+  println("Factorial of 5 is", factorial(5));
+}
+
+main();

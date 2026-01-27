@@ -1,0 +1,31 @@
+{
+  "compiler": {
+    "lexer": "./compiler/lexer/index.js",
+    "parser": "./compiler/parser/index.js",
+    "checker": "./compiler/checker/index.js",
+    "analyzer": "./compiler/analyzer/index.js",
+    "transpiler": "./compiler/transpiler/index.js"
+  },
+  "libraries": {
+    "core": "./src/core/index.js",
+    "io": "./src/io/index.js",
+    "mem": "./src/mem/index.js",
+    "math": "./src/math/index.js",
+    "string": "./src/string/index.js",
+    "container": "./src/container/index.js",
+    "concurrency": "./src/concurrency/index.js"
+  },
+  "testing": {
+    "unit": "./tests/unit/index.js",
+    "integration": "./tests/integration/index.js",
+    "e2e": "./tests/e2e/index.js",
+    "performance": "./tests/performance/index.js"
+  },
+  "tools": {
+    "formatter": "./tools/formatter/index.js",
+    "linter": "./tools/linter/index.js",
+    "debugger": "./tools/debugger/index.js",
+    "profiler": "./tools/profiler/index.js",
+    "generator": "./tools/generator/index.js"
+  }
+}

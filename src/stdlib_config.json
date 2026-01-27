@@ -1,0 +1,187 @@
+{
+  "name": "fax-stdlib",
+  "version": "0.1.0",
+  "description": "Standard library for Fax programming language",
+  "modules": {
+    "core": {
+      "types": {
+        "description": "Basic type definitions",
+        "functions": [
+          "typeof",
+          "size_of",
+          "align_of"
+        ]
+      },
+      "values": {
+        "description": "Value manipulation functions",
+        "functions": [
+          "clone",
+          "move",
+          "swap"
+        ]
+      },
+      "operators": {
+        "description": "Operator implementations",
+        "functions": [
+          "add",
+          "subtract",
+          "multiply",
+          "divide",
+          "modulo",
+          "equal",
+          "not_equal",
+          "less_than",
+          "greater_than",
+          "less_equal",
+          "greater_equal"
+        ]
+      }
+    },
+    "io": {
+      "console": {
+        "description": "Console input/output operations",
+        "functions": [
+          "print",
+          "println",
+          "input",
+          "read_line"
+        ]
+      },
+      "file": {
+        "description": "File I/O operations",
+        "functions": [
+          "open_file",
+          "read_file",
+          "write_file",
+          "close_file"
+        ]
+      }
+    },
+    "mem": {
+      "allocator": {
+        "description": "Memory allocation functions",
+        "functions": [
+          "allocate",
+          "deallocate",
+          "reallocate"
+        ]
+      },
+      "smart_pointers": {
+        "description": "Smart pointer implementations",
+        "functions": [
+          "unique_ptr",
+          "shared_ptr",
+          "weak_ptr"
+        ]
+      }
+    },
+    "math": {
+      "basic": {
+        "description": "Basic mathematical operations",
+        "functions": [
+          "abs",
+          "min",
+          "max",
+          "pow",
+          "sqrt",
+          "exp",
+          "log"
+        ]
+      },
+      "trigonometry": {
+        "description": "Trigonometric functions",
+        "functions": [
+          "sin",
+          "cos",
+          "tan",
+          "asin",
+          "acos",
+          "atan",
+          "atan2"
+        ]
+      }
+    },
+    "string": {
+      "manipulation": {
+        "description": "String manipulation functions",
+        "functions": [
+          "concat",
+          "length",
+          "substring",
+          "find",
+          "replace",
+          "split",
+          "trim"
+        ]
+      },
+      "regex": {
+        "description": "Regular expression functions",
+        "functions": [
+          "match",
+          "search",
+          "replace_regex"
+        ]
+      }
+    },
+    "container": {
+      "array": {
+        "description": "Array operations",
+        "functions": [
+          "create_array",
+          "get_element",
+          "set_element",
+          "array_length"
+        ]
+      },
+      "vector": {
+        "description": "Dynamic array operations",
+        "functions": [
+          "create_vector",
+          "push_back",
+          "pop_back",
+          "vector_size",
+          "vector_capacity"
+        ]
+      },
+      "map": {
+        "description": "Map/dictionary operations",
+        "functions": [
+          "create_map",
+          "insert",
+          "get",
+          "remove",
+          "has_key"
+        ]
+      },
+      "set": {
+        "description": "Set operations",
+        "functions": [
+          "create_set",
+          "add",
+          "remove",
+          "has_element",
+          "union",
+          "intersection"
+        ]
+      }
+    },
+    "concurrency": {
+      "threading": {
+        "description": "Threading primitives",
+        "functions": [
+          "spawn_thread",
+          "join_thread",
+          "sleep"
+        ]
+      },
+      "async": {
+        "description": "Async/await implementation",
+        "functions": [
+          "async",
+          "await",
+          "future"
+        ]
+      }
+    }
+  }
+}

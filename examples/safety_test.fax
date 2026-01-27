@@ -1,0 +1,24 @@
+fn log_int(n: int) {
+    println("Int value:", n);
+}
+
+fn log_string(s: string) {
+    println("String value:", s);
+}
+
+fn main() {
+    // 1. Uji Copy Type (int)
+    let x: int = 10;
+    log_int(x);
+    log_int(x); // Harusnya diperbolehkan (Copy)
+    
+    // 2. Uji Move Type (string)
+    let msg: string = "Fax-lang";
+    log_string(msg);
+    log_string(msg); // Ini HARUS memicu ANALYZER ERROR
+    
+    // 3. Uji Type Mismatch
+    // let err: int = "Salah tipe"; // Jika diuncomment, harusnya memicu CHECKER ERROR
+    
+    println("Safety check passed!");
+}

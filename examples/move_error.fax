@@ -1,0 +1,11 @@
+fn process(val: string) {
+    println("Processing", val);
+}
+
+fn main() {
+    let message: string = "Hello Fax";
+    process(message);
+    
+    // ERROR: message sudah di-move ke fungsi process
+    println("Message again:", message);
+}

@@ -1,0 +1,14 @@
+fn main() {
+    let x: int = 42;
+    let p: ptr<int> = &x;
+    
+    println("Value of x:", x);
+    
+    // Dereferencing pointer to get the value
+    let val: int = *p;
+    println("Value through pointer:", val);
+    
+    // Modifying value through pointer
+    *p = 100;
+    println("New value of x:", x);
+}

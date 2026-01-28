@@ -1,0 +1,63 @@
+// Edge Case: C++ Keyword Collision
+fn test_keywords() {
+    let class: int = 100;
+    let template: string = "template";
+    let namespace: float = 3.14;
+    println("Keywords:", class, template, namespace);
+}
+
+// Edge Case: Division by Zero
+fn test_div_zero() {
+    let a: int = 10;
+    let b: int = 0;
+    // let c: int = a / b; // This might crash at runtime
+    // let d: int = 10 / 0; // This might be caught by compiler
+    println("Division by zero test");
+}
+
+// Edge Case: Deep Nesting
+fn test_nesting() {
+    let result: int = (((((((((1 + 1) * 2) - 1) + 5) / 2) * 2) - 1) + 1));
+    println("Nesting result:", result);
+}
+
+// Edge Case: Empty Blocks
+fn test_empty() {
+    if (true) {
+        // Empty
+    } else {
+        // Empty
+    }
+}
+
+// Edge Case: Long Identifiers
+fn test_long_names() {
+    let this_is_a_very_long_variable_name_that_might_cause_issues_in_some_compilers_but_should_be_fine: int = 42;
+    println(this_is_a_very_long_variable_name_that_might_cause_issues_in_some_compilers_but_should_be_fine);
+}
+
+// Edge Case: Deep Recursion
+fn factorial(n: int) -> int {
+    if (n <= 1) { return 1; }
+    return n * factorial(n - 1);
+}
+
+// Edge Case: Extreme Numbers
+fn test_numbers() {
+    let large: int = 2147483647; // Max 32-bit int
+    let pi: float = 3.141592653589793;
+    let small: float = 0.0000001;
+    println("Numbers:", large, pi, small);
+}
+
+fn main() {
+    test_keywords();
+    test_div_zero();
+    test_nesting();
+    test_empty();
+    test_long_names();
+    test_numbers();
+    println("Factorial of 10:", factorial(10));
+}
+
+main();

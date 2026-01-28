@@ -84,6 +84,10 @@ class PluginManager {
    */
   extractPluginInfo(module, pluginPath) {
     // Check if it's a valid plugin
+    if (!module || typeof module !== 'object' || (!module.name && !module.hooks)) {
+      return null;
+    }
+    
     if (!module.name || !module.version) {
       // Try to infer from filename if not explicitly defined
       const inferredName = path.basename(pluginPath, path.extname(pluginPath));

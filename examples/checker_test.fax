@@ -1,0 +1,14 @@
+fn calculate(a: int, b: int) -> int {
+    return a + b;
+}
+
+fn main() {
+    // 1. Error: Wrong number of arguments (E0061)
+    let res = calculate(10); 
+    
+    // 2. Error: Type mismatch (E0308)
+    let name: string = 42; 
+    
+    // 3. Error: Unknown function (E0425)
+    unknown_fn();
+}

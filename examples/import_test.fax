@@ -1,0 +1,6 @@
+import "math";
+
+fn main() {
+    let x: int = 10;
+    println("Using imported module logic for", x);
+}

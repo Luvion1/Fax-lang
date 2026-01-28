@@ -4,28 +4,27 @@
   "description": "An industrial-strength programming language designed as a safety layer for C++",
   "main": "compiler/main.js",
   "scripts": {
-    "build": "node build.js",
+    "build:lexer": "cd compiler/lexer && cargo build --release",
+    "build:parser": "cd compiler/parser && npm install && npx tsc",
+    "build:checker": "cd compiler/checker && cargo build --release",
+    "build:analyzer": "cd compiler/analyzer && cargo build --release",
+    "build": "npm run build:lexer && npm run build:parser && npm run build:checker && npm run build:analyzer",
     "test": "jest",
+    "faxc": "node compiler/main.js",
     "lint": "eslint src/",
     "format": "prettier --write src/"
   },
-  "keywords": [
-    "language",
-    "compiler",
-    "safety",
-    "c++"
-  ],
-  "author": "Fax-lang Team",
-  "license": "MIT",
   "bin": {
     "faxc": "compiler/main.js",
     "fax": "compiler/fax-cli.js"
   },
-  "devDependencies": {
-    "@types/node": "^25.0.10",
-    "typescript": "^5.9.3"
-  },
   "dependencies": {
-    "chalk": "^5.6.2"
+    "chalk": "^5.3.0",
+    "smol-toml": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "jest": "^29.0.0",
+    "typescript": "^5.0.0"
   }
 }

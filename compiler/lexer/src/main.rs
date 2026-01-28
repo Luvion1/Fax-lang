@@ -5,14 +5,15 @@ use std::fs;
 #[allow(non_camel_case_types)]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 enum TokenType {
-    LET, VAR, CONST, FN, STRUCT, ENUM, IF, ELSE, WHILE, FOR, RETURN,
+    LET, VAR, CONST, FN, STRUCT, ENUM, IF, ELSE, WHILE, FOR, RETURN, IMPORT,
+    PTR, REF, SELF,
     INT, FLOAT, BOOL, STRING, VOID, TRUE, FALSE,
     IDENTIFIER, INTEGER_LITERAL, FLOAT_LITERAL, STRING_LITERAL,
     PLUS, MINUS, MULTIPLY, DIVIDE, MODULO, ASSIGN, EQUAL, NOT_EQUAL,
     LESS_THAN, GREATER_THAN, LESS_EQUAL, GREATER_EQUAL,
-    LOGICAL_NOT,
+    LOGICAL_NOT, LOGICAL_AND, LOGICAL_OR,
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE, LEFT_BRACKET, RIGHT_BRACKET,
-    SEMICOLON, COMMA, DOT, COLON, ARROW,
+    SEMICOLON, COMMA, DOT, COLON, ARROW, AMPERSAND, RANGE,
     EOF
 }
 
@@ -79,9 +80,18 @@ impl Lexer {
                 while let Some(c) = self.advance() {
                     if c == '\n' { break; }
                 }
+            } else if ch == '/' && self.pos + 1 < self.input.len() && self.input[self.pos + 1] == '*' {
+                self.advance(); // /
+                self.advance(); // *
+                while let Some(c) = self.advance() {
+                    if c == '*' && self.peek() == Some('/') {
+                        self.advance(); // /
+                        break;
+                    }
+                }
             } else if ch.is_alphabetic() || ch == '_' {
                 tokens.push(self.read_identifier());
-            } else if ch.is_numeric() {
+            } else if ch.is_numeric() || (ch == '.' && self.pos + 1 < self.input.len() && self.input[self.pos + 1].is_numeric()) {
                 tokens.push(self.read_number());
             } else if ch == '"' {
                 tokens.push(self.read_string());
@@ -119,6 +129,10 @@ impl Lexer {
             "while" => TokenType::WHILE,
             "for" => TokenType::FOR,
             "return" => TokenType::RETURN,
+            "import" => TokenType::IMPORT,
+            "ptr" => TokenType::PTR,
+            "ref" => TokenType::REF,
+            "self" => TokenType::SELF,
             "int" => TokenType::INT,
             "float" => TokenType::FLOAT,
             "string" => TokenType::STRING,
@@ -139,6 +153,10 @@ impl Lexer {
             if ch.is_numeric() {
                 value.push(self.advance().unwrap());
             } else if ch == '.' && !is_float {
+                // Check if it's a double dot range operator
+                if self.pos + 1 < self.input.len() && self.input[self.pos + 1] == '.' {
+                    break;
+                }
                 is_float = true;
                 value.push(self.advance().unwrap());
             } else { break; }
@@ -166,6 +184,10 @@ impl Lexer {
                     match esc {
                         'n' => value.push('\n'),
                         't' => value.push('\t'),
+                        'r' => value.push('\r'),
+                        '\\' => value.push('\\'),
+                        '\'' => value.push('\''),
+                        '0' => value.push('\0'),
                         _ => value.push(esc),
                     }
                 }
@@ -191,7 +213,12 @@ impl Lexer {
             ']' => TokenType::RIGHT_BRACKET,
             ';' => TokenType::SEMICOLON,
             ',' => TokenType::COMMA,
-            '.' => TokenType::DOT,
+            '.' => {
+                if self.peek() == Some('.') {
+                    value.push(self.advance().unwrap());
+                    TokenType::RANGE
+                } else { TokenType::DOT }
+            },
             ':' => TokenType::COLON,
             '=' => {
                 if self.peek() == Some('=') {
@@ -226,6 +253,18 @@ impl Lexer {
                     value.push(self.advance().unwrap());
                     TokenType::NOT_EQUAL
                 } else { TokenType::LOGICAL_NOT }
+            },
+            '&' => {
+                if self.peek() == Some('&') {
+                    value.push(self.advance().unwrap());
+                    TokenType::LOGICAL_AND
+                } else { TokenType::AMPERSAND }
+            },
+            '|' => {
+                if self.peek() == Some('|') {
+                    value.push(self.advance().unwrap());
+                    TokenType::LOGICAL_OR
+                } else { return None }
             },
             _ => return None,
         };

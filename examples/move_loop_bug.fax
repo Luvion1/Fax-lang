@@ -1,0 +1,13 @@
+fn consume(s: string) {
+    println("Consumed:", s);
+}
+
+fn main() {
+    let msg: string = "Hello Loop";
+    
+    while (true) {
+        // ERROR: Ini ilegal karena msg akan dipindahkan di iterasi pertama,
+        // dan iterasi kedua akan mencoba memindahkan variabel yang sudah hilang.
+        consume(msg);
+    }
+}

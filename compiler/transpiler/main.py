@@ -1,5 +1,6 @@
 import json
 import sys
+import os
 from datetime import datetime
 
 class Transpiler:
@@ -7,110 +8,131 @@ class Transpiler:
         self.ast = ast
         self.indent_size = 4
         self.current_indent = 0
-        self.user_functions = [f["name"] for f in ast["body"] if f["type"] == "FunctionDeclaration"]
+        self.cpp_keywords = {
+            "alignas", "alignof", "and", "and_eq", "asm", "atomic_cancel", "atomic_commit", 
+            "atomic_noexcept", "auto", "bitand", "bitor", "bool", "break", "case", "catch", 
+            "char", "char8_t", "char16_t", "char32_t", "class", "compl", "concept", "const", 
+            "consteval", "constexpr", "constinit", "const_cast", "continue", "co_await", 
+            "co_return", "co_yield", "decltype", "default", "delete", "do", "double", 
+            "dynamic_cast", "else", "enum", "explicit", "export", "extern", "false", "float", 
+            "for", "friend", "goto", "if", "inline", "int", "long", "mutable", "namespace", 
+            "new", "noexcept", "not", "not_eq", "nullptr", "operator", "or", "or_eq", 
+            "private", "protected", "public", "reflexpr", "register", "reinterpret_cast", 
+            "requires", "return", "short", "signed", "sizeof", "static", "static_assert", 
+            "static_cast", "struct", "switch", "synchronized", "template", "this", 
+            "thread_local", "throw", "true", "try", "typedef", "typeid", "typename", 
+            "union", "unsigned", "using", "virtual", "void", "volatile", "wchar_t", 
+            "while", "xor", "xor_eq"
+        }
+        self.user_functions = [self.mangle(f["name"]) for f in ast["body"] if f["type"] == "FunctionDeclaration"]
 
-    def emit_indent(self):
+    def mangle(self, name):
+        if name in self.cpp_keywords:
+            return name + "_"
+        return name
+
+    def get_indent(self):
         return " " * (self.current_indent * self.indent_size)
 
-    def generate(self, node, level=None):
+    def generate(self, node, level=None, no_paren=False):
         if not node: return ""
         if level is not None: self.current_indent = level
-        
         t = node.get("type")
         
-        # Dispatch table for cleaner structure
-        dispatch = {
-            "Program": self.gen_program,
-            "FunctionDeclaration": self.gen_function,
-            "VariableDeclaration": self.gen_variable,
-            "BlockStatement": self.gen_block,
-            "ExpressionStatement": lambda n: f"{self.emit_indent()}{self.generate(n['expression'])};",
-            "IfStatement": self.gen_if,
-            "WhileStatement": self.gen_while,
-            "ForStatement": self.gen_for,
-            "ReturnStatement": lambda n: f"{self.emit_indent()}return {self.generate(n['argument']) if n.get('argument') else ''};",
-            "AssignmentExpression": lambda n: f"{self.generate(n['left'])} = {self.generate(n['right'])}",
-            "BinaryExpression": lambda n: f"({self.generate(n['left'])} {n['operator']} {self.generate(n['right'])})",
-            "UnaryExpression": lambda n: f"({n['operator']}{self.generate(n['argument'])})",
-            "CallExpression": self.gen_call,
-            "MemberExpression": lambda n: f"{self.generate(n['object'])}.{n['property']}",
-            "IndexExpression": lambda n: f"{self.generate(n['object'])}[{self.generate(n['index'])}]",
-            "Literal": self.gen_literal,
-            "Identifier": lambda n: n["name"],
-            "ArrayLiteral": lambda n: "{" + ", ".join([self.generate(e) for e in n["elements"]]) + "}"
-        }
+        if t == "Program": return self.gen_program(node)
+        if t == "FunctionDeclaration": return self.gen_function(node)
+        if t == "VariableDeclaration": return self.gen_variable(node)
+        if t == "BlockStatement": return self.gen_block(node)
+        if t == "ExpressionStatement": return self.get_indent() + self.generate(node['expression'], no_paren=True) + ";"
+        if t == "IfStatement": return self.gen_if(node)
+        if t == "WhileStatement": return self.gen_while(node)
+        if t == "ForStatement": return self.gen_for(node)
+        if t == "ReturnStatement":
+            arg = self.generate(node["argument"], no_paren=True) if node.get("argument") else ""
+            return self.get_indent() + "return " + arg + ";"
+        if t == "AssignmentExpression": 
+            return self.generate(node['left']) + " = " + self.generate(node['right'], no_paren=True)
+        if t == "BinaryExpression": 
+            res = self.generate(node['left']) + " " + node['operator'] + " " + self.generate(node['right'])
+            return res if no_paren else "(" + res + ")"
+        if t == "UnaryExpression":
+            op = node['operator']
+            arg = self.generate(node['argument'])
+            if op == "&": return "&(" + arg + ")"
+            return "(" + op + arg + ")"
+        if t == "CallExpression": return self.gen_call(node)
+        if t == "MemberExpression": return self.generate(node['object']) + "." + self.mangle(node['property'])
+        if t == "IndexExpression": return self.generate(node['object']) + "[" + self.generate(node['index'], no_paren=True) + "]"
+        if t == "SliceExpression": return "fax_std::Array<decltype(" + self.generate(node['object']) + ")::value_type>(" + self.generate(node['object']) + ".begin() + " + self.generate(node['start']) + ", " + self.generate(node['object']) + ".begin() + " + self.generate(node['end']) + ")"
+        if t == "Literal": return self.gen_literal(node)
+        if t == "Identifier":
+            if node["name"] == "self": return "(*this)"
+            return self.mangle(node["name"])
+        if t == "ArrayLiteral": 
+            return "{" + ", ".join([self.generate(e, no_paren=True) for e in node["elements"]]) + "}"
+        if t == "StructDeclaration": return self.gen_struct(node)
+        if t == "ImportStatement": return self.gen_import(node)
         
-        func = dispatch.get(t)
-        if func: return func(node)
-        return f"/* Unknown Node: {t} */"
+        return "/* Unknown Node: " + str(t) + " */"
+
+    def gen_import(self, node):
+        return '#include "' + node["path"] + '.hpp"'
 
     def gen_literal(self, node):
         val = node["value"]
-        if isinstance(val, str): return f'\"{val}\"'
-        if isinstance(val, bool): return str(val).lower()
+        if isinstance(val, str): return '"' + val + '"'
+        if isinstance(val, bool): return "true" if val else "false"
         return str(val)
 
     def gen_program(self, node):
-        ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        header = (
-            "/**\n"
-            " * @file output.cpp\n"
-            " * @brief High-quality C++ source auto-generated by Fax-lang\n"
-            f" * @date {ts}\n"
-            " */\n\n"
-            "#include <iostream>\n"
-            "#include <string>\n"
-            "#include <vector>\n"
-            "#include <stdexcept>\n\n"
-            "namespace fax_app {\n"
-        )
-        
+        header = "/**\n * @file output.cpp\n * @brief Generated by Fax-lang Polyglot Compiler\n */\n\n"
+        header += "#include \"fax_runtime.hpp\"\n"
+        for stmt in node["body"]:
+            if stmt["type"] == "ImportStatement":
+                header += self.generate(stmt) + "\n"
+        header += "\nnamespace fax_app {\n"
         body = ""
-        # 1. Generate Prototypes if needed (optional for small projects)
-        # 2. Generate Functions and Structs
         for stmt in node["body"]:
             if stmt["type"] in ["FunctionDeclaration", "StructDeclaration"]:
                 body += self.generate(stmt, 1) + "\n"
-        
-        footer = "} // namespace fax_app\n\n"
-        footer += (
-            "int main(int argc, char* argv[]) {\n"
-            "    try {\n"
-        )
-        
-        main_logic = ""
+        footer = "\n} // namespace fax_app\n\n"
+        footer += "int main(int argc, char* argv[]) {\n    try {\n"
         self.current_indent = 2
+        main_logic = ""
         for stmt in node["body"]:
-            if stmt["type"] not in ["FunctionDeclaration", "StructDeclaration"]:
+            if stmt["type"] not in ["FunctionDeclaration", "StructDeclaration", "ImportStatement"]:
                 if stmt["type"] == "ExpressionStatement" and \
                    stmt["expression"]["type"] == "CallExpression" and \
+                   stmt["expression"]["callee"].get("type") == "Identifier" and \
                    stmt["expression"]["callee"].get("name") == "main":
                     continue
                 main_logic += self.generate(stmt) + "\n"
-        
         if "main" in self.user_functions:
             main_logic += "        fax_app::main();\n"
-            
         footer += main_logic
-        footer += (
-            "        return 0;\n"
-            "    } catch (const std::exception& e) {\n"
-            "        std::cerr << \"[FATAL]: \" << e.what() << std::endl;\n"
-            "        return 1;\n"
-            "    }\n"
-            "}\n"
-        )
+        footer += "        return 0;\n    } catch (const std::exception& e) {\n"
+        footer += "        std::cerr << \"[FATAL]: \" << e.what() << std::endl;\n"
+        footer += "        return 1;\n    }\n}\n"
         return header + body + footer
+
+    def gen_struct(self, node):
+        code = "\n" + self.get_indent() + "struct " + self.mangle(node['name']) + " {\n"
+        self.current_indent += 1
+        for field in node["fields"]:
+            code += self.get_indent() + self.map_type(field['type']) + " " + self.mangle(field['name']) + ";\n"
+        for method in node.get("methods", []):
+            code += self.generate(method) + "\n"
+        self.current_indent -= 1
+        code += self.get_indent() + "};"
+        return code
 
     def gen_function(self, node):
         ret = self.map_type(node["returnType"])
-        name = node["name"]
-        params = ", ".join([f"{self.map_type(p['type'])} {p['name']}" for p in node["params"]])
-        
-        doc = f"\n{self.emit_indent()}/**\n{self.emit_indent()} * @brief {name}\n{self.emit_indent()} */\n"
-        code = f"{self.emit_indent()}{ret} {name}({params}) "
+        name = self.mangle(node["name"])
+        params = ", ".join([self.map_type(p['type']) + " " + self.mangle(p['name']) for p in node["params"] if p["type"] != "self"])
+        code = self.get_indent() + ret + " " + name + "(" + params + ") "
         code += self.generate(node["body"], self.current_indent)
-        return doc + code
+        return "\n" + self.get_indent() + "/** @brief " + name + " */\n" + code
 
     def gen_block(self, node):
         code = "{\n"
@@ -118,16 +140,16 @@ class Transpiler:
         for stmt in node["body"]:
             code += self.generate(stmt) + "\n"
         self.current_indent -= 1
-        code += f"{self.emit_indent()}}}"
+        code += self.get_indent() + "}"
         return code
 
     def gen_variable(self, node):
         dtype = self.map_type(node["dataType"])
-        init = f" = {self.generate(node['initializer'])}" if node.get("initializer") else ""
-        return f"{self.emit_indent()}{dtype} {node['identifier']}{init};"
+        init = " = " + self.generate(node['initializer'], no_paren=True) if node.get("initializer") else ""
+        return self.get_indent() + dtype + " " + self.mangle(node['identifier']) + init + ";"
 
     def gen_if(self, node):
-        code = f"{self.emit_indent()}if ({self.generate(node['test'])}) "
+        code = self.get_indent() + "if (" + self.generate(node['test'], no_paren=True) + ") "
         code += self.generate(node["consequent"], self.current_indent).strip()
         if node.get("alternate"):
             code += " else "
@@ -135,27 +157,28 @@ class Transpiler:
         return code
 
     def gen_while(self, node):
-        return f"{self.emit_indent()}while ({self.generate(node['test'])}) {self.generate(node['body'], self.current_indent).strip()}"
+        return self.get_indent() + "while (" + self.generate(node['test'], no_paren=True) + ") " + self.generate(node['body'], self.current_indent).strip()
 
     def gen_for(self, node):
-        init = self.generate(node["init"]).strip().replace(";", "") if node.get("init") else ""
-        test = self.generate(node["test"]) if node.get("test") else ""
-        update = self.generate(node["update"]) if node.get("update") else ""
-        return f"{self.emit_indent()}for ({init}; {test}; {update}) {self.generate(node['body'], self.current_indent).strip()}"
+        init = self.generate(node["init"], no_paren=True).strip().replace(";", "") if node.get("init") else ""
+        test = self.generate(node["test"], no_paren=True) if node.get("test") else ""
+        update = self.generate(node["update"], no_paren=True) if node.get("update") else ""
+        return self.get_indent() + "for (" + init + "; " + test + "; " + update + ") " + self.generate(node['body'], self.current_indent).strip()
 
     def gen_call(self, node):
         callee = self.generate(node["callee"])
-        args = [self.generate(a) for a in node["arguments"]]
+        args = [self.generate(a, no_paren=True) for a in node["arguments"]]
         if callee == "println":
-            return f"std::cout << {" << \" \" << ".join(args)} << std::endl"
+            return "fax_std::println(" + ", ".join(args) + ")"
         if callee in self.user_functions and self.current_indent >= 2:
-            return f"fax_app::{callee}({', '.join(args)})"
-        return f"{callee}({', '.join(args)})"
+            return "fax_app::" + callee + "(" + ", ".join(args) + ")"
+        return callee + "(" + ", ".join(args) + ")"
 
     def map_type(self, fax_type):
         if not fax_type: return "auto"
-        if fax_type.endswith("[]"):
-            return f"std::vector<{self.map_type(fax_type.replace('[]', ''))}>"
+        if fax_type.startswith("ptr<"): return "fax_std::Ptr<" + self.map_type(fax_type[4:-1]) + ">"
+        if fax_type.startswith("ref<"): return self.map_type(fax_type[4:-1]) + "&"
+        if fax_type.endswith("[]"): return "fax_std::Array<" + self.map_type(fax_type[:-2]) + ">"
         mapping = {"int": "int", "float": "float", "bool": "bool", "string": "std::string", "void": "void"}
         return mapping.get(fax_type, fax_type)
 

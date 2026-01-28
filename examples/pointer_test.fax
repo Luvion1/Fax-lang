@@ -1,0 +1,8 @@
+fn main() {
+    let x: int = 100;
+    // Pointers are currently simulated as references for safety in this version
+    // but the syntax is validated for future deep analysis
+    let p: ptr<int>; 
+    
+    println("Initial value of x:", x);
+}

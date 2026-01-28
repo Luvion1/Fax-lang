@@ -13,6 +13,16 @@ const ERROR_DATABASE = {
         "title": "Use of Moved Value",
         "explanation": "This variable has been moved to another location (e.g., passed into a function or assigned to another variable).\nFax-lang uses strict move semantics for non-primitive types to ensure memory safety without a garbage collector.",
         "solution": "Avoid using the variable after it has been moved, or use primitive types which are copied by default."
+    },
+    "E0308": {
+        "title": "Mismatched Types",
+        "explanation": "You tried to assign a value of one type to a variable or parameter of a different type.\nFax-lang is statically typed and does not allow implicit type conversion for most operations.",
+        "solution": "Ensure that the value matches the declared type, or use 'auto' for type inference."
+    },
+    "E0061": {
+        "title": "Wrong Number of Arguments",
+        "explanation": "The number of arguments provided in the function call does not match the number of parameters in the function definition.",
+        "solution": "Check the function signature and provide the correct number of arguments."
     }
 };
 

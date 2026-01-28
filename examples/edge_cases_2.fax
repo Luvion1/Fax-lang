@@ -1,0 +1,59 @@
+// Edge Case: Variable Shadowing
+fn test_shadowing() {
+    let x: int = 10;
+    println("Outer x:", x); // Should be 10
+    if (true) {
+        let x: int = 20;
+        println("Inner x:", x); // Should be 20
+        if (true) {
+            let x: string = "shadow";
+            println("Deep inner x:", x); // Should be "shadow"
+        }
+    }
+    println("Outer x again:", x); // Should be 10
+}
+
+// Edge Case: Complex Boolean Logic
+fn test_logic() {
+    let a: bool = true;
+    let b: bool = false;
+    let c: bool = true;
+    
+    if ((a && b) || (c && !b)) {
+        println("Logic test 1 passed");
+    }
+    
+    if (!!a == a) {
+        println("Logic test 2 (double negation) passed");
+    }
+}
+
+// Edge Case: Array Boundaries & Types
+fn test_arrays() {
+    let empty: int[] = [];
+    let single: int[] = [42];
+    println("Single element array:", single[0]);
+    
+    let mix: float = 10 + 5.5; // Type promotion
+    println("Mixed type promotion (10 + 5.5):", mix);
+}
+
+// Edge Case: Comments & Whitespace
+fn test_formatting() {
+    let x:int=5;/** Comment in between **/let y:int=10;
+    // Only comments below
+    
+    
+    /* Multiline
+       Comment */
+    println("Formatting test:", x, y);
+}
+
+fn main() {
+    test_shadowing();
+    test_logic();
+    test_arrays();
+    test_formatting();
+}
+
+main();

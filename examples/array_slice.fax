@@ -1,0 +1,9 @@
+fn main() {
+    let arr: int[] = [10, 20, 30, 40, 50];
+    
+    // Slicing from index 1 to 4 (elements 20, 30, 40)
+    let slice: int[] = arr[1..4];
+    
+    println("Slice result:");
+    // println(slice[0]); // 20
+}

@@ -1,32 +1,64 @@
-name: CI/CD Pipeline
+name: Fax-lang CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [14.x, 16.x, 18.x]
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install C++ Toolchain
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++ build-essential
+
+    - name: Install Root Dependencies
+      run: npm install
+
+    - name: Build Lexer (Rust)
+      run: cargo build --release --manifest-path compiler/lexer/Cargo.toml
+
+    - name: Build Checker (Rust)
+      run: cargo build --release --manifest-path compiler/checker/Cargo.toml
+
+    - name: Build Analyzer (Rust)
+      run: cargo build --release --manifest-path compiler/analyzer/Cargo.toml
+
+    - name: Build Parser (TypeScript)
+      run: |
+        cd compiler/parser
+        npm install
+        npx tsc
+
+    - name: Run Integration Tests (Edge Cases)
+      run: |
+        node compiler/main.js examples/edge_cases.fax
+        g++ -std=c++17 fax_app.cpp -o edge_cases_bin
+        ./edge_cases_bin
         
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run tests
+        node compiler/main.js examples/edge_cases_2.fax
+        g++ -std=c++17 fax_app.cpp -o edge_cases_2_bin
+        ./edge_cases_2_bin
+
+    - name: Run Unit Tests
       run: npm test
-      
-    - name: Run linting
-      run: npm run lint

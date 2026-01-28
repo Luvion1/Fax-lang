@@ -8,15 +8,31 @@ use std::fs;
 #[serde(tag = "type")]
 enum Node {
     Program { body: Vec<Node> },
-    VariableDeclaration { identifier: String, dataType: String, initializer: Option<Box<Node>>, position: Option<Pos> },
-    FunctionDeclaration { name: String, params: Vec<Param>, returnType: String, body: Box<Node> },
-    BlockStatement { body: Vec<Node> },
+    VariableDeclaration { 
+        identifier: String, 
+        #[serde(rename = "dataType")] dataType: String, 
+        #[serde(rename = "isConstant")] isConstant: Option<bool>, 
+        initializer: Option<Box<Node>>, 
+        position: Option<Pos> 
+    },
+    FunctionDeclaration { 
+        name: String, 
+        params: Vec<Param>, 
+        #[serde(rename = "returnType")] returnType: String, 
+        body: Box<Node>, 
+        position: Option<Pos> 
+    },
+    BlockStatement { body: Vec<Node>, position: Option<Pos> },
     ExpressionStatement { expression: Box<Node> },
-    AssignmentExpression { left: Box<Node>, right: Box<Node> },
-    CallExpression { callee: Box<Node>, arguments: Vec<Node> },
-    IfStatement { test: Box<Node>, consequent: Box<Node>, alternate: Option<Box<Node>> },
-    WhileStatement { test: Box<Node>, body: Box<Node> },
-    ForStatement { init: Option<Box<Node>>, test: Box<Node>, update: Option<Box<Node>>, body: Box<Node> },
+    AssignmentExpression { left: Box<Node>, right: Box<Node>, position: Option<Pos> },
+    CallExpression { callee: Box<Node>, arguments: Vec<Node>, position: Option<Pos> },
+    MemberExpression { object: Box<Node>, property: String, position: Option<Pos> },
+    BinaryExpression { operator: String, left: Box<Node>, right: Box<Node>, position: Option<Pos> },
+    IfStatement { test: Box<Node>, consequent: Box<Node>, alternate: Option<Box<Node>>, position: Option<Pos> },
+    WhileStatement { test: Box<Node>, body: Box<Node>, position: Option<Pos> },
+    ForStatement { init: Option<Box<Node>>, test: Option<Box<Node>>, update: Option<Box<Node>>, body: Box<Node>, position: Option<Pos> },
+    BreakStatement { position: Option<Pos> },
+    ContinueStatement { position: Option<Pos> },
     Identifier { name: String, position: Option<Pos> },
     Literal { value: serde_json::Value, position: Option<Pos> },
     ReturnStatement { argument: Option<Box<Node>>, position: Option<Pos> },
@@ -45,6 +61,7 @@ struct Span { line: usize, column: usize, length: usize, label: String }
 struct VarInfo {
     state: OwnershipState,
     dtype: String,
+    is_constant: bool,
     defined_at: Pos,
 }
 
@@ -79,9 +96,9 @@ impl BorrowChecker {
         }
     }
 
-    fn report_error(&self, name: &str, pos: &Pos, msg: &str, label: &str) -> ! {
+    fn report_error(&self, name: &str, pos: &Pos, msg: &str, label: &str, code: &str) -> ! {
         let diag = Diagnostic {
-            code: "E0382".to_string(),
+            code: code.to_string(),
             message: msg.to_string(),
             primary_span: Span { line: pos.line, column: pos.column, length: name.len(), label: label.to_string() },
             secondary_spans: vec![], suggestion: None, note: None,
@@ -93,37 +110,61 @@ impl BorrowChecker {
     fn analyze(&mut self, node: &Node) {
         match node {
             Node::Program { body } => { for stmt in body { self.analyze(stmt); } }
-            Node::VariableDeclaration { identifier, dataType, initializer, position, .. } => {
+            Node::VariableDeclaration { identifier, dataType, isConstant, initializer, position, .. } => {
                 if let Some(init) = initializer { self.analyze(init); }
                 let pos = position.clone().unwrap_or(Pos { line: 0, column: 0 });
                 self.define_var(identifier.clone(), VarInfo {
                     state: OwnershipState::Owned,
                     dtype: dataType.clone(),
+                    is_constant: isConstant.unwrap_or(false),
                     defined_at: pos,
                 });
+            }
+            Node::AssignmentExpression { left, right, position } => {
+                self.analyze(right);
+                if let Node::Identifier { name, .. } = &**left {
+                    if let Some(info) = self.get_var(name) {
+                        if info.is_constant {
+                            let pos = position.clone().unwrap_or(info.defined_at.clone());
+                            self.report_error(name, &pos, &format!("cannot assign to constant variable `{}`", name), "re-assignment of constant", "E0384");
+                        }
+                    }
+                }
+                self.analyze(left);
             }
             Node::Identifier { name, position } => {
                 if let Some(info) = self.get_var(name) {
                     if info.state == OwnershipState::Moved {
                         let pos = position.clone().unwrap_or(info.defined_at.clone());
-                        self.report_error(name, &pos, &format!("use of moved value: `{}`", name), "value used here after move");
+                        self.report_error(name, &pos, &format!("use of moved value: `{}`", name), "value used here after move", "E0382");
                     }
                 }
             }
-            Node::WhileStatement { test, body } => {
+            Node::WhileStatement { test, body, .. } => {
                 self.analyze(test);
                 self.analyze(body);
             }
-            Node::CallExpression { arguments, .. } => {
+            Node::ForStatement { init, test, update, body, .. } => {
+                self.enter_scope();
+                if let Some(ref i) = init { self.analyze(&*i); }
+                if let Some(ref t) = test { self.analyze(&*t); }
+                if let Some(ref u) = update { self.analyze(&*u); }
+                self.analyze(body);
+                self.exit_scope();
+            }
+            Node::CallExpression { callee, arguments, .. } => {
+                let is_println = if let Node::Identifier { name, .. } = &**callee { name == "println" } else { false };
                 for arg in arguments {
                     if let Node::Identifier { name, position } = arg {
                         if let Some(info) = self.get_var_mut(name) {
                             if !BorrowChecker::is_copy_type(&info.dtype) {
                                 if info.state == OwnershipState::Moved {
                                     let pos = position.clone().unwrap_or(info.defined_at.clone());
-                                    self.report_error(name, &pos, &format!("cannot move already moved value `{}`", name), "attempt to move again");
+                                    self.report_error(name, &pos, &format!("cannot move already moved value `{}`", name), "attempt to move again", "E0382");
                                 }
-                                info.state = OwnershipState::Moved;
+                                if !is_println {
+                                    info.state = OwnershipState::Moved;
+                                }
                             }
                         }
                     } else { self.analyze(arg); }
@@ -134,17 +175,54 @@ impl BorrowChecker {
                 self.analyze(body);
                 self.exit_scope();
             }
-            Node::BlockStatement { body } => { 
+            Node::BlockStatement { body, .. } => { 
                 self.enter_scope();
                 for stmt in body { self.analyze(stmt); } 
                 self.exit_scope();
             }
-            Node::IfStatement { test, consequent, alternate } => {
+            Node::IfStatement { test, consequent, alternate, .. } => {
                 self.analyze(test);
+                
+                // Capture states before branching
+                let before_states: Vec<HashMap<String, OwnershipState>> = self.scopes.iter()
+                    .map(|s| s.iter().map(|(k, v)| (k.clone(), v.state.clone())).collect())
+                    .collect();
+
                 self.analyze(consequent);
-                if let Some(alt) = alternate { self.analyze(alt); }
+                
+                // Capture states after consequent
+                let after_consequent: Vec<HashMap<String, OwnershipState>> = self.scopes.iter()
+                    .map(|s| s.iter().map(|(k, v)| (k.clone(), v.state.clone())).collect())
+                    .collect();
+
+                // Reset to before state for alternate
+                for (i, scope_states) in before_states.iter().enumerate() {
+                    for (name, state) in scope_states {
+                        if let Some(info) = self.scopes[i].get_mut(name) {
+                            info.state = state.clone();
+                        }
+                    }
+                }
+
+                if let Some(alt) = alternate {
+                    self.analyze(alt);
+                }
+
+                // Merge states: if moved in EITHER branch, it's moved
+                for (i, scope_states) in after_consequent.iter().enumerate() {
+                    for (name, state) in scope_states {
+                        if *state == OwnershipState::Moved {
+                            if let Some(info) = self.scopes[i].get_mut(name) {
+                                info.state = OwnershipState::Moved;
+                            }
+                        }
+                    }
+                }
             }
             Node::ExpressionStatement { expression } => self.analyze(expression),
+            Node::ReturnStatement { argument, .. } => {
+                if let Some(ref arg) = argument { self.analyze(&*arg); }
+            }
             _ => {}
         }
     }

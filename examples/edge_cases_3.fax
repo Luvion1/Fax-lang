@@ -1,0 +1,59 @@
+struct Position {
+    x: int,
+    y: int
+}
+
+struct Entity {
+    id: int,
+    pos: Position,
+    active: bool,
+
+    fn update(self, new_x: int, new_y: int) {
+        self.pos.x = new_x;
+        self.pos.y = new_y;
+    }
+}
+
+// Edge Case: Strings with complex escapes
+fn test_strings() {
+    let s: string = "Line 1\nLine 2\tTabbed \"Quoted\" \\Backslash\\";
+    println(s);
+}
+
+// Edge Case: Method calls on nested structs
+fn test_nested_structs() {
+    let e: Entity;
+    e.id = 1;
+    e.pos.x = 0;
+    e.pos.y = 0;
+    e.active = true;
+
+    println("Initial position:", e.pos.x, e.pos.y);
+    e.update(10, 20);
+    println("Updated position:", e.pos.x, e.pos.y);
+}
+
+// Edge Case: Array of Structs
+fn test_struct_arrays() {
+    let entities: Entity[] = []; // Initializing empty array of structs
+    println("Struct array initialized");
+}
+
+// Edge Case: Function returning a struct (if supported by transpiler)
+fn create_pos(x: int, y: int) -> Position {
+    let p: Position;
+    p.x = x;
+    p.y = y;
+    return p;
+}
+
+fn main() {
+    test_strings();
+    test_nested_structs();
+    test_struct_arrays();
+    
+    let p: Position = create_pos(100, 200);
+    println("Created position:", p.x, p.y);
+}
+
+main();

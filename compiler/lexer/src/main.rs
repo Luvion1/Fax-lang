@@ -5,7 +5,7 @@ use std::fs;
 #[allow(non_camel_case_types)]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 enum TokenType {
-    LET, VAR, CONST, FN, STRUCT, ENUM, IF, ELSE, WHILE, FOR, RETURN, IMPORT,
+    LET, VAR, CONST, FN, STRUCT, ENUM, IF, ELSE, WHILE, FOR, RETURN, BREAK, CONTINUE, IMPORT,
     PTR, REF, SELF,
     INT, FLOAT, BOOL, STRING, VOID, TRUE, FALSE,
     IDENTIFIER, INTEGER_LITERAL, FLOAT_LITERAL, STRING_LITERAL,
@@ -38,6 +38,21 @@ struct Lexer {
     column: usize,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct Diagnostic {
+    code: String,
+    message: String,
+    primary_span: Span,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct Span {
+    line: usize,
+    column: usize,
+    length: usize,
+    label: String,
+}
+
 impl Lexer {
     fn new(input: String) -> Self {
         Lexer {
@@ -46,6 +61,21 @@ impl Lexer {
             line: 1,
             column: 1,
         }
+    }
+
+    fn report_error(&self, ch: char) -> ! {
+        let diag = Diagnostic {
+            code: "E000".to_string(),
+            message: format!("illegal character: '{}'", ch),
+            primary_span: Span {
+                line: self.line,
+                column: self.column,
+                length: 1,
+                label: "unexpected character here".to_string(),
+            },
+        };
+        eprintln!("{}", serde_json::to_string(&diag).unwrap());
+        std::process::exit(1);
     }
 
     fn advance(&mut self) -> Option<char> {
@@ -99,7 +129,8 @@ impl Lexer {
                 if let Some(token) = self.read_punctuation_or_operator() {
                     tokens.push(token);
                 } else {
-                    self.advance(); // Skip unknown
+                    let ch = self.peek().unwrap();
+                    self.report_error(ch);
                 }
             }
         }
@@ -122,6 +153,7 @@ impl Lexer {
         }
         let token_type = match value.as_str() {
             "let" => TokenType::LET,
+            "const" => TokenType::CONST,
             "fn" => TokenType::FN,
             "struct" => TokenType::STRUCT,
             "if" => TokenType::IF,
@@ -129,6 +161,8 @@ impl Lexer {
             "while" => TokenType::WHILE,
             "for" => TokenType::FOR,
             "return" => TokenType::RETURN,
+            "break" => TokenType::BREAK,
+            "continue" => TokenType::CONTINUE,
             "import" => TokenType::IMPORT,
             "ptr" => TokenType::PTR,
             "ref" => TokenType::REF,

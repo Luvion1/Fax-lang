@@ -3,6 +3,7 @@ import * as fs from 'fs';
 enum TokenType {
     LET = "LET", VAR = "VAR", CONST = "CONST", FN = "FN", STRUCT = "STRUCT",
     IF = "IF", ELSE = "ELSE", WHILE = "WHILE", FOR = "FOR", RETURN = "RETURN",
+    BREAK = "BREAK", CONTINUE = "CONTINUE",
     IMPORT = "IMPORT", PTR = "PTR", REF = "REF", SELF = "SELF",
     INT = "INT", FLOAT = "FLOAT", BOOL = "BOOL", STRING = "STRING", VOID = "VOID",
     TRUE = "TRUE", FALSE = "FALSE", IDENTIFIER = "IDENTIFIER",
@@ -34,7 +35,7 @@ class Parser {
         this.tokens = tokens;
     }
 
-    private peek() { return this.tokens[this.pos]; }
+    private peek() { return this.tokens[this.pos]; } 
     private advance() { return this.tokens[this.pos++]; }
 
     private reportError(message: string, label: string, code: string = "E000"): never {
@@ -79,7 +80,8 @@ ${this.peek().value}
     private parseStatement(): any {
         const token = this.peek();
         switch (token.type) {
-            case TokenType.LET: return this.parseVariableDeclaration();
+            case TokenType.LET:
+            case TokenType.CONST: return this.parseVariableDeclaration();
             case TokenType.FN: return this.parseFunctionDeclaration();
             case TokenType.STRUCT: return this.parseStructDeclaration();
             case TokenType.RETURN: return this.parseReturnStatement();
@@ -87,6 +89,8 @@ ${this.peek().value}
             case TokenType.IF: return this.parseIfStatement();
             case TokenType.WHILE: return this.parseWhileStatement();
             case TokenType.FOR: return this.parseForStatement();
+            case TokenType.BREAK: return this.parseBreakStatement();
+            case TokenType.CONTINUE: return this.parseContinueStatement();
             case TokenType.LEFT_BRACE: return this.parseBlock();
             default:
                 const expr = this.parseExpression();
@@ -97,7 +101,8 @@ ${this.peek().value}
 
     private parseVariableDeclaration() {
         const token = this.peek();
-        this.advance(); // let
+        const isConstant = token.type === TokenType.CONST;
+        this.advance(); // let or const
         const id = this.expect(TokenType.IDENTIFIER, "expected a variable name after keyword").value;
         let dataType = "auto";
         if (this.match(TokenType.COLON)) {
@@ -111,7 +116,8 @@ ${this.peek().value}
         return { 
             type: "VariableDeclaration", 
             identifier: id, 
-            dataType, 
+            dataType,
+            isConstant,
             initializer,
             position: { line: token.position.line, column: token.position.column }
         };
@@ -136,6 +142,7 @@ ${this.peek().value}
     }
 
     private parseFunctionDeclaration() {
+        const token = this.peek();
         this.advance(); // fn
         const name = this.expect(TokenType.IDENTIFIER).value;
         this.expect(TokenType.LEFT_PAREN);
@@ -156,10 +163,11 @@ ${this.peek().value}
         let returnType = "void";
         if (this.match(TokenType.ARROW)) returnType = this.parseType();
         const body = this.parseBlock();
-        return { type: "FunctionDeclaration", name, params, returnType, body };
+        return { type: "FunctionDeclaration", name, params, returnType, body, position: token.position };
     }
 
     private parseStructDeclaration() {
+        const token = this.peek();
         this.advance(); // struct
         const name = this.expect(TokenType.IDENTIFIER).value;
         this.expect(TokenType.LEFT_BRACE);
@@ -177,7 +185,7 @@ ${this.peek().value}
             }
         }
         this.expect(TokenType.RIGHT_BRACE);
-        return { type: "StructDeclaration", name, fields, methods };
+        return { type: "StructDeclaration", name, fields, methods, position: token.position };
     }
 
     private parseImportStatement() {
@@ -188,6 +196,7 @@ ${this.peek().value}
     }
 
     private parseIfStatement() {
+        const token = this.peek();
         this.advance(); // if
         this.expect(TokenType.LEFT_PAREN);
         const test = this.parseExpression();
@@ -195,46 +204,74 @@ ${this.peek().value}
         const consequent = this.parseStatement();
         let alternate = null;
         if (this.match(TokenType.ELSE)) alternate = this.parseStatement();
-        return { type: "IfStatement", test, consequent, alternate };
+        return { type: "IfStatement", test, consequent, alternate, position: token.position };
     }
 
     private parseWhileStatement() {
+        const token = this.peek();
         this.advance();
         this.expect(TokenType.LEFT_PAREN);
         const test = this.parseExpression();
         this.expect(TokenType.RIGHT_PAREN);
         const body = this.parseStatement();
-        return { type: "WhileStatement", test, body };
+        return { type: "WhileStatement", test, body, position: token.position };
     }
 
     private parseForStatement() {
-        this.advance();
+        const token = this.peek();
+        this.advance(); // for
         this.expect(TokenType.LEFT_PAREN);
-        const init = this.peek().type === TokenType.SEMICOLON ? null : this.parseStatement();
-        const test = this.peek().type === TokenType.SEMICOLON ? null : this.parseExpression();
-        if (test) this.expect(TokenType.SEMICOLON);
+        
+        let init = null;
+        if (!this.match(TokenType.SEMICOLON)) {
+            init = this.parseStatement();
+        }
+        
+        let test = null;
+        if (!this.match(TokenType.SEMICOLON)) {
+            test = this.parseExpression();
+            this.expect(TokenType.SEMICOLON);
+        }
+        
         const update = this.peek().type === TokenType.RIGHT_PAREN ? null : this.parseExpression();
         this.expect(TokenType.RIGHT_PAREN);
+        
         const body = this.parseStatement();
-        return { type: "ForStatement", init, test, update, body };
+        return { type: "ForStatement", init, test, update, body, position: token.position };
     }
 
     private parseReturnStatement() {
+        const token = this.peek();
         this.advance();
         let argument = null;
         if (this.peek().type !== TokenType.SEMICOLON) argument = this.parseExpression();
         this.expect(TokenType.SEMICOLON);
-        return { type: "ReturnStatement", argument };
+        return { type: "ReturnStatement", argument, position: token.position };
+    }
+
+    private parseBreakStatement() {
+        const token = this.peek();
+        this.advance(); // break
+        this.expect(TokenType.SEMICOLON);
+        return { type: "BreakStatement", position: token.position };
+    }
+
+    private parseContinueStatement() {
+        const token = this.peek();
+        this.advance(); // continue
+        this.expect(TokenType.SEMICOLON);
+        return { type: "ContinueStatement", position: token.position };
     }
 
     private parseBlock() {
+        const token = this.peek();
         this.expect(TokenType.LEFT_BRACE);
         const body = [];
         while (this.peek().type !== TokenType.RIGHT_BRACE && this.peek().type !== TokenType.EOF) {
             body.push(this.parseStatement());
         }
         this.expect(TokenType.RIGHT_BRACE);
-        return { type: "BlockStatement", body };
+        return { type: "BlockStatement", body, position: token.position };
     }
 
     private parseExpression(): any {
@@ -244,7 +281,7 @@ ${this.peek().value}
     private parseAssignment(): any {
         const left = this.parseLogicalOr();
         if (this.match(TokenType.ASSIGN)) {
-            return { type: "AssignmentExpression", left, right: this.parseExpression() };
+            return { type: "AssignmentExpression", left, right: this.parseExpression(), position: left.position };
         }
         return left;
     }
@@ -252,7 +289,8 @@ ${this.peek().value}
     private parseLogicalOr(): any {
         let left = this.parseLogicalAnd();
         while (this.match(TokenType.LOGICAL_OR)) {
-            left = { type: "BinaryExpression", operator: "||", left, right: this.parseLogicalAnd() };
+            const operator = "||";
+            left = { type: "BinaryExpression", operator, left, right: this.parseLogicalAnd(), position: left.position };
         }
         return left;
     }
@@ -260,7 +298,8 @@ ${this.peek().value}
     private parseLogicalAnd(): any {
         let left = this.parseComparison();
         while (this.match(TokenType.LOGICAL_AND)) {
-            left = { type: "BinaryExpression", operator: "&&", left, right: this.parseComparison() };
+            const operator = "&&";
+            left = { type: "BinaryExpression", operator, left, right: this.parseComparison(), position: left.position };
         }
         return left;
     }
@@ -269,7 +308,7 @@ ${this.peek().value}
         let left = this.parseAdditive();
         while ([TokenType.EQUAL, TokenType.NOT_EQUAL, TokenType.LESS_THAN, TokenType.GREATER_THAN, TokenType.LESS_EQUAL, TokenType.GREATER_EQUAL].includes(this.peek().type)) {
             const operator = this.advance().value;
-            left = { type: "BinaryExpression", operator, left, right: this.parseAdditive() };
+            left = { type: "BinaryExpression", operator, left, right: this.parseAdditive(), position: left.position };
         }
         return left;
     }
@@ -278,7 +317,7 @@ ${this.peek().value}
         let left = this.parseMultiplicative();
         while ([TokenType.PLUS, TokenType.MINUS].includes(this.peek().type)) {
             const operator = this.advance().value;
-            left = { type: "BinaryExpression", operator, left, right: this.parseMultiplicative() };
+            left = { type: "BinaryExpression", operator, left, right: this.parseMultiplicative(), position: left.position };
         }
         return left;
     }
@@ -287,7 +326,7 @@ ${this.peek().value}
         let left = this.parseCall();
         while ([TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MODULO].includes(this.peek().type)) {
             const operator = this.advance().value;
-            left = { type: "BinaryExpression", operator, left, right: this.parseCall() };
+            left = { type: "BinaryExpression", operator, left, right: this.parseCall(), position: left.position };
         }
         return left;
     }
@@ -295,26 +334,27 @@ ${this.peek().value}
     private parseCall(): any {
         let expr = this.parseMember();
         while (true) {
+            const pos = expr.position;
             if (this.match(TokenType.LEFT_PAREN)) {
                 const args = [];
                 if (this.peek().type !== TokenType.RIGHT_PAREN) {
                     do { args.push(this.parseExpression()); } while (this.match(TokenType.COMMA));
                 }
                 this.expect(TokenType.RIGHT_PAREN);
-                expr = { type: "CallExpression", callee: expr, arguments: args };
+                expr = { type: "CallExpression", callee: expr, arguments: args, position: pos };
             } else if (this.match(TokenType.LEFT_BRACKET)) {
                 const start = this.parseExpression();
                 if (this.match(TokenType.RANGE)) {
                     const end = this.parseExpression();
                     this.expect(TokenType.RIGHT_BRACKET);
-                    expr = { type: "SliceExpression", object: expr, start, end };
+                    expr = { type: "SliceExpression", object: expr, start, end, position: pos };
                 } else {
                     this.expect(TokenType.RIGHT_BRACKET);
-                    expr = { type: "IndexExpression", object: expr, index: start };
+                    expr = { type: "IndexExpression", object: expr, index: start, position: pos };
                 }
             } else if (this.match(TokenType.DOT)) {
                 const property = this.expect(TokenType.IDENTIFIER).value;
-                expr = { type: "MemberExpression", object: expr, property };
+                expr = { type: "MemberExpression", object: expr, property, position: pos };
             } else break;
         }
         return expr;

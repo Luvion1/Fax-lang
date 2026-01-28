@@ -1,0 +1,55 @@
+fn test_loop_controls() {
+    println("Start test_loop_controls");
+    let i: int = 0;
+    while (i < 10) {
+        i = i + 1;
+        if (i == 2) {
+            println("Skipping 2");
+            continue;
+        }
+        if (i == 5) {
+            println("Breaking at 5");
+            break;
+        }
+        println("i is", i);
+    }
+    println("End test_loop_controls");
+}
+
+fn test_nested_loops() {
+    println("Start test_nested_loops");
+    for (let i: int = 0; i < 3; i = i + 1) {
+        for (let j: int = 0; j < 3; j = j + 1) {
+            if (i == 1 && j == 1) {
+                println("Breaking inner loop at i=1, j=1");
+                break;
+            }
+            println("i:", i, "j:", j);
+        }
+    }
+}
+
+fn test_unary_stacking() {
+    let a: bool = true;
+    let b: bool = !!a;
+    println("Double negation of true:", b);
+    
+    let x: int = 10;
+    let y: int = ---x; // -(-(-10)) = -10
+    println("Triple negation of 10:", y);
+}
+
+fn test_constants() {
+    const PI: float = 3.14159;
+    println("PI is", PI);
+    // PI = 3.14; // Should ideally be caught by analyzer/checker
+}
+
+fn main() {
+    test_loop_controls();
+    test_nested_loops();
+    test_unary_stacking();
+    test_constants();
+}
+
+main();

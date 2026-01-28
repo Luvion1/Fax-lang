@@ -1,0 +1,47 @@
+struct Point {
+    x: int,
+    y: int
+}
+
+struct Rect {
+    top_left: Point,
+    bottom_right: Point
+}
+
+fn test_const_violation() {
+    const IMMUTABLE: int = 10;
+    println("Immutable value:", IMMUTABLE);
+    // IMMUTABLE = 20; // Should trigger E0384
+}
+
+fn test_nested_struct_types() {
+    let r: Rect;
+    r.top_left.x = 100;
+    r.top_left.y = "wrong type"; // Should trigger E0308 in Checker
+    println("Rect x:", r.top_left.x);
+}
+
+fn test_math_edges() {
+    let a: float = 10.5;
+    let b: int = 3;
+    let res: float = a % b; // Test modulo with float
+    println("10.5 % 3 =", res);
+    
+    let neg: int = -10 % 3;
+    println("-10 % 3 =", neg);
+}
+
+fn test_scope_order() {
+    // println("Using before decl:", late_var); // Should error
+    let late_var: int = 42;
+    println("Late var:", late_var);
+}
+
+fn main() {
+    test_const_violation();
+    test_nested_struct_types();
+    test_math_edges();
+    test_scope_order();
+}
+
+main();

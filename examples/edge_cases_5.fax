@@ -1,0 +1,47 @@
+// Edge Case: Ownership in branches
+fn test_move_branches(condition: bool) {
+    let s: string = "transferable";
+    if (condition) {
+        println("Not moved inside if:", s);
+    } else {
+        println("Not moved in else:", s);
+    }
+    println("Access after branches:", s); // This should be an error if we had branch merging
+}
+
+// Edge Case: For loop variants
+fn test_loop_variants() {
+    let i: int = 0;
+    println("Start empty init/update loop:");
+    for (; i < 3; ) {
+        println("Loop i:", i);
+        i = i + 1;
+    }
+
+    // Infinite-style loop (if parser allows it)
+    let j: int = 0;
+    while (true) {
+        if (j >= 2) {
+            return; // Test return from inside while
+        }
+        println("Loop j:", j);
+        j = j + 1;
+    }
+}
+
+// Edge Case: Pointer dereferencing simulation
+fn test_pointers() {
+    let val: int = 500;
+    // Syntax for pointers is currently a placeholder in lexer/parser
+    // but we can test the structure
+    println("Pointer logic test complete");
+}
+
+fn main() {
+    test_move_branches(true);
+    test_move_branches(false);
+    test_loop_variants();
+    test_pointers();
+}
+
+main();

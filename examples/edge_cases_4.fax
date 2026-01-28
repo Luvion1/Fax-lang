@@ -1,0 +1,38 @@
+let global_val: int = 99;
+
+fn test_global_shadowing() {
+    let global_val: string = "shadowed";
+    println("Local shadow of global:", global_val);
+}
+
+// Edge Case: Deep recursive calls that might cause stack overflow in some environments
+fn deep_recursion(n: int) -> int {
+    if (n <= 0) { return 0; }
+    return 1 + deep_recursion(n - 1);
+}
+
+// Edge Case: Very long comment and mixed whitespace
+/**
+ * This is a very long block comment designed to test if the lexer
+ * handles large chunks of non-code text correctly without slowing down
+ * or losing its position in the source file.
+ * 
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * 
+ * It contains various symbols: !@#$%^&*()_+=-`~[]\{}|;':",./<>?
+ */
+
+fn test_large_ops() {
+    let result: int = 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12 + 13 + 14 + 15 + 16 + 17 + 18 + 19 + 20;
+    println("Sum of 1..20:", result);
+}
+
+fn main() {
+    test_global_shadowing();
+    println("Global value still:", global_val);
+    
+    println("Deep recursion (1000):", deep_recursion(1000));
+    test_large_ops();
+}
+
+main();

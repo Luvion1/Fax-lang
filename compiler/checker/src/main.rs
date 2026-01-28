@@ -21,19 +21,41 @@ struct Suggestion { message: String, replacement: String }
 #[serde(tag = "type")]
 enum Node {
     Program { body: Vec<Node> },
-    VariableDeclaration { identifier: String, dataType: String, initializer: Option<Box<Node>>, position: Option<Pos> },
-    FunctionDeclaration { name: String, params: Vec<Param>, returnType: String, body: Box<Node>, position: Option<Pos> },
-    BlockStatement { body: Vec<Node> },
+    VariableDeclaration { 
+        identifier: String, 
+        #[serde(rename = "dataType")] data_type: String, 
+        #[serde(rename = "isConstant")] is_constant: Option<bool>, 
+        initializer: Option<Box<Node>>, 
+        position: Option<Pos> 
+    },
+    FunctionDeclaration { 
+        name: String, 
+        params: Vec<Param>, 
+        #[serde(rename = "returnType")] return_type: String, 
+        body: Box<Node>, 
+        position: Option<Pos> 
+    },
+    StructDeclaration { name: String, fields: Vec<Field>, methods: Vec<Node>, position: Option<Pos> },
+    BlockStatement { body: Vec<Node>, position: Option<Pos> },
     ExpressionStatement { expression: Box<Node> },
-    AssignmentExpression { left: Box<Node>, right: Box<Node> },
+    AssignmentExpression { left: Box<Node>, right: Box<Node>, position: Option<Pos> },
     CallExpression { callee: Box<Node>, arguments: Vec<Node>, position: Option<Pos> },
-    BinaryExpression { operator: String, left: Box<Node>, right: Box<Node> },
+    MemberExpression { object: Box<Node>, property: String, position: Option<Pos> },
+    BinaryExpression { operator: String, left: Box<Node>, right: Box<Node>, position: Option<Pos> },
+    IfStatement { test: Box<Node>, consequent: Box<Node>, alternate: Option<Box<Node>>, position: Option<Pos> },
+    WhileStatement { test: Box<Node>, body: Box<Node>, position: Option<Pos> },
+    ForStatement { init: Option<Box<Node>>, test: Option<Box<Node>>, update: Option<Box<Node>>, body: Box<Node>, position: Option<Pos> },
     UnaryExpression { operator: String, argument: Box<Node> },
     Identifier { name: String, position: Option<Pos> },
     Literal { value: serde_json::Value, position: Option<Pos> },
     ReturnStatement { argument: Option<Box<Node>>, position: Option<Pos> },
+    BreakStatement { position: Option<Pos> },
+    ContinueStatement { position: Option<Pos> },
     #[serde(other)] Unknown,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct Field { name: String, #[serde(rename = "type")] field_type: String }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Param { name: String, #[serde(rename = "type")] param_type: String }
@@ -41,13 +63,18 @@ struct Param { name: String, #[serde(rename = "type")] param_type: String }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Pos { line: usize, column: usize }
 
+struct StructInfo {
+    fields: HashMap<String, String>,
+}
+
 struct SymbolTable {
     scopes: Vec<HashMap<String, String>>,
     functions: HashMap<String, (Vec<String>, String)>,
+    structs: HashMap<String, StructInfo>,
 }
 
 impl SymbolTable {
-    fn new() -> Self { SymbolTable { scopes: vec![HashMap::new()], functions: HashMap::new() } }
+    fn new() -> Self { SymbolTable { scopes: vec![HashMap::new()], functions: HashMap::new(), structs: HashMap::new() } }
     fn enter_scope(&mut self) { self.scopes.push(HashMap::new()); }
     fn exit_scope(&mut self) { self.scopes.pop(); }
     fn define(&mut self, name: String, dtype: String) {
@@ -99,6 +126,15 @@ fn get_type(node: &Node, symbols: &SymbolTable) -> String {
             }
             "unknown".to_string()
         }
+        Node::MemberExpression { object, property, .. } => {
+            let obj_type = get_type(object, symbols);
+            if let Some(info) = symbols.structs.get(&obj_type) {
+                if let Some(f_type) = info.fields.get(property) {
+                    return f_type.clone();
+                }
+            }
+            "unknown".to_string()
+        }
         _ => "unknown".to_string(),
     }
 }
@@ -107,9 +143,17 @@ fn check(node: &Node, symbols: &mut SymbolTable) {
     match node {
         Node::Program { body } => {
             for stmt in body {
-                if let Node::FunctionDeclaration { name, params, returnType, .. } = stmt {
-                    let p_types = params.iter().map(|p| p.param_type.clone()).collect();
-                    symbols.functions.insert(name.clone(), (p_types, returnType.clone()));
+                match stmt {
+                    Node::FunctionDeclaration { name, params, return_type, .. } => {
+                        let p_types = params.iter().map(|p| p.param_type.clone()).collect();
+                        symbols.functions.insert(name.clone(), (p_types, return_type.clone()));
+                    }
+                    Node::StructDeclaration { name, fields, .. } => {
+                        let mut field_map = HashMap::new();
+                        for f in fields { field_map.insert(f.name.clone(), f.field_type.clone()); }
+                        symbols.structs.insert(name.clone(), StructInfo { fields: field_map });
+                    }
+                    _ => {}
                 }
             }
             for stmt in body { check(stmt, symbols); }
@@ -120,36 +164,39 @@ fn check(node: &Node, symbols: &mut SymbolTable) {
             check(body, symbols);
             symbols.exit_scope();
         }
-        Node::VariableDeclaration { identifier, dataType, initializer, position } => {
+        Node::VariableDeclaration { identifier, data_type, initializer, position, .. } => {
             if let Some(init) = initializer {
                 let init_type = get_type(init, symbols);
-                if dataType != "auto" && init_type != "unknown" && dataType != &init_type {
+                if data_type != "auto" && init_type != "unknown" && data_type != &init_type {
                     let p = position.clone().unwrap_or(Pos { line: 0, column: 0 });
                     report_error(Diagnostic {
                         code: "E0308".to_string(), message: "mismatched types".to_string(),
-                        primary_span: Span { line: p.line, column: p.column, length: identifier.len(), label: format!("expected `{}`, found `{}`", dataType, init_type) },
+                        primary_span: Span { line: p.line, column: p.column, length: identifier.len(), label: format!("expected `{}`, found `{}`", data_type, init_type) },
                         secondary_spans: vec![], suggestion: None, note: None,
                     });
                 }
             }
-            symbols.define(identifier.clone(), dataType.clone());
+            symbols.define(identifier.clone(), data_type.clone());
         }
-        Node::AssignmentExpression { left, right } => {
-            if let Node::Identifier { name, position } = &**left {
-                let var_type = symbols.lookup(name).unwrap_or("unknown".to_string());
-                let val_type = get_type(right, symbols);
-                if var_type != "unknown" && val_type != "unknown" && var_type != val_type {
-                    let p = position.clone().unwrap_or(Pos { line: 0, column: 0 });
-                    report_error(Diagnostic {
-                        code: "E0308".to_string(),
-                        message: "mismatched types during assignment".to_string(),
-                        primary_span: Span {
-                            line: p.line, column: p.column, length: name.len(),
-                            label: format!("variable `{}` is type `{}`, but assigned `{}`", name, var_type, val_type),
-                        },
-                        secondary_spans: vec![], suggestion: None, note: None,
-                    });
-                }
+        Node::AssignmentExpression { left, right, position } => {
+            let var_type = get_type(left, symbols);
+            let val_type = get_type(right, symbols);
+            if var_type != "unknown" && val_type != "unknown" && var_type != val_type {
+                let name = match &**left {
+                    Node::Identifier { name, .. } => name.clone(),
+                    Node::MemberExpression { property, .. } => property.clone(),
+                    _ => "expression".to_string(),
+                };
+                let p = position.clone().unwrap_or(Pos { line: 0, column: 0 });
+                report_error(Diagnostic {
+                    code: "E0308".to_string(),
+                    message: "mismatched types during assignment".to_string(),
+                    primary_span: Span {
+                        line: p.line, column: p.column, length: name.len(),
+                        label: format!("expected `{}`, found `{}`", var_type, val_type),
+                    },
+                    secondary_spans: vec![], suggestion: None, note: None,
+                });
             }
             check(left, symbols);
             check(right, symbols);
@@ -182,16 +229,16 @@ fn check(node: &Node, symbols: &mut SymbolTable) {
                 }
             }
         }
-        Node::BinaryExpression { operator, left, right } => {
+        Node::BinaryExpression { operator, left, right, position } => {
             let lt = get_type(left, symbols);
             let rt = get_type(right, symbols);
             if lt != "unknown" && rt != "unknown" && lt != rt {
-                // Sederhanakan untuk sekarang: hanya error jika benar-benar berbeda (misal string + int)
                 if (lt == "string" && rt != "string") || (rt == "string" && lt != "string") {
+                    let p = position.clone().unwrap_or(Pos { line: 0, column: 0 });
                     report_error(Diagnostic {
                         code: "E0308".to_string(),
                         message: "operator type mismatch".to_string(),
-                        primary_span: Span { line: 0, column: 0, length: operator.len(), label: format!("cannot apply `{}` to `{}` and `{}`", operator, lt, rt) },
+                        primary_span: Span { line: p.line, column: p.column, length: operator.len(), label: format!("cannot apply `{}` to `{}` and `{}`", operator, lt, rt) },
                         secondary_spans: vec![], suggestion: None, note: None,
                     });
                 }
@@ -199,12 +246,29 @@ fn check(node: &Node, symbols: &mut SymbolTable) {
             check(left, symbols);
             check(right, symbols);
         }
-        Node::BlockStatement { body } => {
+        Node::BlockStatement { body, .. } => {
             symbols.enter_scope();
             for stmt in body { check(stmt, symbols); }
             symbols.exit_scope();
         }
         Node::ExpressionStatement { expression } => check(expression, symbols),
+        Node::IfStatement { test, consequent, alternate, .. } => {
+            check(test, symbols);
+            check(consequent, symbols);
+            if let Some(alt) = alternate { check(alt, symbols); }
+        }
+        Node::WhileStatement { test, body, .. } => {
+            check(test, symbols);
+            check(body, symbols);
+        }
+        Node::ForStatement { init: f_init, test: f_test, update: f_update, body, .. } => {
+            symbols.enter_scope();
+            if let Some(ref i) = f_init { check(&*i, symbols); }
+            if let Some(ref t) = f_test { check(&*t, symbols); }
+            if let Some(ref u) = f_update { check(&*u, symbols); }
+            check(body, symbols);
+            symbols.exit_scope();
+        }
         _ => {}
     }
 }

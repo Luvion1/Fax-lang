@@ -48,14 +48,15 @@ class FaxCompiler {
     }
 
     renderSpan(source, span, isPrimary) {
-        if (!span || span.line === 0) return;
+        if (!span || !span.line || span.line === 0) return;
         const lineIdx = span.line - 1;
+        if (lineIdx < 0 || lineIdx >= source.length) return;
         const lineContent = source[lineIdx] || "";
         const gutter = c.gutter(`${span.line.toString().padStart(3, ' ')} | `);
         console.error(gutter + lineContent);
         const pointerChar = isPrimary ? '^' : '-';
         const pointerColor = isPrimary ? c.boldRed : c.info;
-        const pointer = ' '.repeat(span.column - 1) + pointerColor(pointerChar.repeat(span.length || 1));
+        const pointer = ' '.repeat(Math.max(0, span.column - 1)) + pointerColor(pointerChar.repeat(Math.max(1, span.length || 1)));
         const label = span.label ? ` ${pointerColor(span.label)}` : '';
         console.error(c.gutter('    | ') + pointer + label);
     }

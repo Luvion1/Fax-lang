@@ -113,7 +113,10 @@ fn get_type(node: &Node, symbols: &SymbolTable) -> String {
             }
             get_type(argument, symbols)
         }
-        Node::BinaryExpression { left, right, .. } => {
+        Node::BinaryExpression { operator, left, right, .. } => {
+            if matches!(operator.as_str(), "==" | "!=" | "<" | ">" | "<=" | ">=" | "&&" | "||") {
+                return "bool".to_string();
+            }
             let lt = get_type(left, symbols);
             let rt = get_type(right, symbols);
             if lt == "float" || rt == "float" { "float".to_string() }

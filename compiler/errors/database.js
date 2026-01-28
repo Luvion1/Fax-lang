@@ -53,6 +53,16 @@ const ERROR_DATABASE = {
         "title": "Expected Literal",
         "explanation": "A literal value (like a string, number, or boolean) was expected in this context.",
         "solution": "Provide a valid literal value, for example, a quoted string for import paths."
+    },
+    "E0128": {
+        "title": "Variable Re-definition",
+        "explanation": "A variable with this name has already been defined in the current scope.\nFax-lang does not allow shadowing within the same block, though shadowing from outer scopes is permitted.",
+        "solution": "Use a different name for the new variable, or remove the 'let'/'const' keyword if you intended to re-assign (and the variable is not constant)."
+    },
+    "E0384": {
+        "title": "Cannot Assign to Constant",
+        "explanation": "You tried to assign a value to a variable declared with 'const'.\nConstants are immutable and cannot be changed after their initial definition.",
+        "solution": "Use 'let' instead of 'const' if the variable needs to be mutable, or remove the assignment."
     }
 };
 

@@ -1,0 +1,25 @@
+fn test_deep_shadowing() {
+    let i: int = 100;
+    println("Outer i:", i);
+    
+    for (let i: int = 0; i < 2; i = i + 1) {
+        println("Loop i level 1:", i);
+        
+        for (let i: int = 10; i < 12; i = i + 1) {
+            println("Loop i level 2:", i);
+            
+            if (true) {
+                let i: string = "deep shadow";
+                println("Deepest i:", i);
+            }
+        }
+        println("Back to Loop i level 1:", i);
+    }
+    println("Back to Outer i:", i);
+}
+
+fn main() {
+    test_deep_shadowing();
+}
+
+main();

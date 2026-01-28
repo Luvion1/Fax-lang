@@ -1,0 +1,21 @@
+fn test_reverse_loop() {
+    println("Countdown:");
+    for (let i: int = 5; i > 0; i = i - 1) {
+        println(i, "...");
+    }
+    println("Blast off!");
+}
+
+fn test_step_loop() {
+    println("Even numbers 0-10:");
+    for (let i: int = 0; i <= 10; i = i + 2) {
+        println(i);
+    }
+}
+
+fn main() {
+    test_reverse_loop();
+    test_step_loop();
+}
+
+main();

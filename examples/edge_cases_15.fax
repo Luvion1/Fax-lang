@@ -1,0 +1,13 @@
+import "console";
+import "console"; // Redundant import
+import "math";
+
+fn test_imports() {
+    println("Imports tested");
+}
+
+fn main() {
+    test_imports();
+}
+
+main();

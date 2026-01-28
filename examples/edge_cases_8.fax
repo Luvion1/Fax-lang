@@ -1,0 +1,32 @@
+let config_val: int = 100;
+
+fn test_shadow_params(config_val: string) {
+    println("Parameter config_val:", config_val); // Should be string from param
+    if (true) {
+        let config_val: float = 3.14;
+        println("Inner shadow config_val:", config_val); // Should be float
+    }
+}
+
+fn test_redefinition() {
+    let x: int = 1;
+    println("x is", x);
+    let x: int = 2; // Should trigger E0128
+}
+
+fn test_complex_indexing() {
+    let data: int[] = [10, 20, 30, 40, 50];
+    let offset: int = 1;
+    let multiplier: int = 2;
+    // Accessing index (1 + 2) = 3 -> 40
+    println("Data at complex index:", data[offset + multiplier]);
+}
+
+fn main() {
+    test_shadow_params("dynamic_config");
+    println("Global config_val:", config_val);
+    test_redefinition();
+    test_complex_indexing();
+}
+
+main();

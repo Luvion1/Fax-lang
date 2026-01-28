@@ -1,0 +1,28 @@
+fn test_multi_level_pointers() {
+    let x: int = 500;
+    let p: ptr<int> = &x;
+    let pp: ptr<ptr<int>> = &p;
+    
+    println("Value via double pointer:", **pp);
+    
+    **pp = 1000;
+    println("Updated value via double pointer:", x);
+}
+
+fn test_pointer_arrays() {
+    let a: int = 1;
+    let b: int = 2;
+    let c: int = 3;
+    
+    // Array of pointers (if parser/transpiler handles this syntax)
+    let ptrs: ptr<int>[] = [&a, &b, &c];
+    
+    println("Pointer array elements:", *ptrs[0], *ptrs[1], *ptrs[2]);
+}
+
+fn main() {
+    test_multi_level_pointers();
+    test_pointer_arrays();
+}
+
+main();

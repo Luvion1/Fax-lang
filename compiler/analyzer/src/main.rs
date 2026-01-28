@@ -67,10 +67,11 @@ struct VarInfo {
 
 struct BorrowChecker {
     scopes: Vec<HashMap<String, VarInfo>>,
+    functions: HashMap<String, Pos>,
 }
 
 impl BorrowChecker {
-    fn new() -> Self { BorrowChecker { scopes: vec![HashMap::new()] } }
+    fn new() -> Self { BorrowChecker { scopes: vec![HashMap::new()], functions: HashMap::new() } }
     fn is_copy_type(dtype: &str) -> bool { matches!(dtype, "int" | "float" | "bool") }
 
     fn enter_scope(&mut self) { self.scopes.push(HashMap::new()); }
@@ -91,9 +92,55 @@ impl BorrowChecker {
     }
 
     fn define_var(&mut self, name: String, info: VarInfo) {
+        if self.functions.contains_key(&name) {
+            let diag = Diagnostic {
+                code: "E0128".to_string(),
+                message: format!("name conflict: `{}` is already defined as a function", name),
+                primary_span: Span { line: info.defined_at.line, column: info.defined_at.column, length: name.len(), label: "conflicts with function here".to_string() },
+                secondary_spans: vec![], suggestion: None, note: None,
+            };
+            eprintln!("{}", serde_json::to_string(&diag).unwrap());
+            std::process::exit(1);
+        }
         if let Some(scope) = self.scopes.last_mut() {
+            if scope.contains_key(&name) {
+                // In a real implementation we would call report_error here.
+                // For mass fixes, we will use a new error code E0128.
+                let diag = Diagnostic {
+                    code: "E0128".to_string(),
+                    message: format!("re-definition of variable `{}`", name),
+                    primary_span: Span { line: info.defined_at.line, column: info.defined_at.column, length: name.len(), label: "already defined in this scope".to_string() },
+                    secondary_spans: vec![], suggestion: None, note: None,
+                };
+                eprintln!("{}", serde_json::to_string(&diag).unwrap());
+                std::process::exit(1);
+            }
             scope.insert(name, info);
         }
+    }
+
+    fn define_fn(&mut self, name: String, pos: Pos) {
+        if self.get_var(&name).is_some() {
+            let diag = Diagnostic {
+                code: "E0128".to_string(),
+                message: format!("name conflict: `{}` is already defined as a variable", name),
+                primary_span: Span { line: pos.line, column: pos.column, length: name.len(), label: "conflicts with variable here".to_string() },
+                secondary_spans: vec![], suggestion: None, note: None,
+            };
+            eprintln!("{}", serde_json::to_string(&diag).unwrap());
+            std::process::exit(1);
+        }
+        if self.functions.contains_key(&name) {
+            let diag = Diagnostic {
+                code: "E0128".to_string(),
+                message: format!("re-definition of function `{}`", name),
+                primary_span: Span { line: pos.line, column: pos.column, length: name.len(), label: "already defined".to_string() },
+                secondary_spans: vec![], suggestion: None, note: None,
+            };
+            eprintln!("{}", serde_json::to_string(&diag).unwrap());
+            std::process::exit(1);
+        }
+        self.functions.insert(name, pos);
     }
 
     fn report_error(&self, name: &str, pos: &Pos, msg: &str, label: &str, code: &str) -> ! {
@@ -170,7 +217,9 @@ impl BorrowChecker {
                     } else { self.analyze(arg); }
                 }
             }
-            Node::FunctionDeclaration { body, .. } => {
+            Node::FunctionDeclaration { name, body, position, .. } => {
+                let pos = position.clone().unwrap_or(Pos { line: 0, column: 0 });
+                self.define_fn(name.clone(), pos);
                 self.enter_scope();
                 self.analyze(body);
                 self.exit_scope();

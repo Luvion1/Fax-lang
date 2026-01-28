@@ -1,0 +1,31 @@
+struct Node {
+    value: int,
+    // next: ptr<Node> // Recursive struct pointers would be a great future edge case
+}
+
+fn test_struct_pointers() {
+    let n: Node;
+    n.value = 42;
+    
+    let p: ptr<Node> = &n;
+    println("Node value via pointer:", (*p).value);
+    
+    (*p).value = 100;
+    println("Updated node value:", n.value);
+}
+
+fn test_primitive_pointers() {
+    let x: int = 10;
+    let px: ptr<int> = &x;
+    println("Primitive via pointer:", *px);
+    
+    *px = 20;
+    println("Updated primitive:", x);
+}
+
+fn main() {
+    test_struct_pointers();
+    test_primitive_pointers();
+}
+
+main();

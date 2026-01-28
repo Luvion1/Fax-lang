@@ -1,0 +1,27 @@
+struct Box {
+    value: int,
+    
+    fn set_value(self, new_val: int) {
+        self.value = new_val;
+    }
+    
+    fn get_ptr(self) -> ptr<int> {
+        return &self.value;
+    }
+}
+
+fn test_struct_methods() {
+    let b: Box;
+    b.set_value(123);
+    println("Box value:", b.value);
+    
+    let p: ptr<int> = b.get_ptr();
+    *p = 456;
+    println("Box value after pointer update:", b.value);
+}
+
+fn main() {
+    test_struct_methods();
+}
+
+main();

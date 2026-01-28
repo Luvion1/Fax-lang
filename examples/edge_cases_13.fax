@@ -1,0 +1,23 @@
+fn is_even(n: int) -> bool {
+    println("Checking if", n, "is even...");
+    return n % 2 == 0;
+}
+
+fn test_complex_conditions() {
+    let x: int = 4;
+    if (is_even(x) && x > 0) {
+        println(x, "is a positive even number");
+    }
+    
+    let i: int = 0;
+    while (i < 5 && is_even(i)) {
+        println("Looping even i:", i);
+        i = i + 2;
+    }
+}
+
+fn main() {
+    test_complex_conditions();
+}
+
+main();

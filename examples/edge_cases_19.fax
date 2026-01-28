@@ -1,0 +1,16 @@
+const GLOBAL_CONST: int = 100 * 2;
+const MATH_PI: float = 3.14159;
+
+fn test_global_const() {
+    println("Global const:", GLOBAL_CONST);
+    println("Global math pi:", MATH_PI);
+    
+    let local: int = GLOBAL_CONST / 2;
+    println("Local derived from global:", local);
+}
+
+fn main() {
+    test_global_const();
+}
+
+main();

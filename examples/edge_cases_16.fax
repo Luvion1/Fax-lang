@@ -1,0 +1,12 @@
+let conflict: int = 10;
+
+// This should fail because 'conflict' is already a variable
+fn conflict() {
+    println("I am a function");
+}
+
+fn main() {
+    println("Conflict test");
+}
+
+main();

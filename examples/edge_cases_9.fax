@@ -1,0 +1,24 @@
+// Edge Case: Slicing and Multi-dimensional Array access
+fn test_array_ops() {
+    let matrix: int[][] = [[1, 2], [3, 4], [5, 6]];
+    println("Matrix [1][0]:", matrix[1][0]); // Should be 3
+    
+    let numbers: int[] = [10, 20, 30, 40, 50];
+    let sub: int[] = numbers[1..4]; // Slice index 1 to 3: [20, 30, 40]
+    
+    println("Slice length should be 3. Elements:");
+    println(sub[0], sub[1], sub[2]);
+}
+
+fn test_slice_empty() {
+    let arr: int[] = [1, 2, 3];
+    let empty_slice: int[] = arr[1..1]; // Should be empty
+    println("Empty slice created");
+}
+
+fn main() {
+    test_array_ops();
+    test_slice_empty();
+}
+
+main();

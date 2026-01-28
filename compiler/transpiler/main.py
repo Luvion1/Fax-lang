@@ -24,34 +24,24 @@ class Transpiler:
             "union", "unsigned", "using", "virtual", "void", "volatile", "wchar_t", 
             "while", "xor", "xor_eq"
         }
-        self.user_symbols = [self.mangle(s["name"]) for s in ast["body"] if s["type"] == "FunctionDeclaration"]
-        self.user_symbols += [self.mangle(s["identifier"]) for s in ast["body"] if s["type"] == "VariableDeclaration"]
+        self.user_symbols = set()
+        for stmt in ast["body"]:
+            if stmt["type"] == "FunctionDeclaration": self.user_symbols.add(self.mangle(stmt["name"]))
+            if stmt["type"] == "VariableDeclaration": self.user_symbols.add(self.mangle(stmt["identifier"]))
+            if stmt["type"] == "StructDeclaration": self.user_symbols.add(self.mangle(stmt["name"]))
         self.local_scopes = []
 
-    def enter_scope(self):
-        self.local_scopes.append(set())
-
-    def exit_scope(self):
-        self.local_scopes.pop()
-
+    def enter_scope(self): self.local_scopes.append(set())
+    def exit_scope(self): self.local_scopes.pop()
     def add_local(self, name):
-        if self.local_scopes:
-            self.local_scopes[-1].add(self.mangle(name))
-
+        if self.local_scopes: self.local_scopes[-1].add(self.mangle(name))
     def is_local(self, name):
-        name = self.mangle(name)
-        for scope in reversed(self.local_scopes):
-            if name in scope:
-                return True
+        m = self.mangle(name)
+        for s in reversed(self.local_scopes):
+            if m in s: return True
         return False
-
-    def mangle(self, name):
-        if name in self.cpp_keywords:
-            return name + "_"
-        return name
-
-    def get_indent(self):
-        return " " * (self.current_indent * self.indent_size)
+    def mangle(self, name): return name + "_" if name in self.cpp_keywords else name
+    def get_indent(self): return " " * (self.current_indent * self.indent_size)
 
     def generate(self, node, level=None, no_paren=False):
         if not node: return ""
@@ -69,165 +59,160 @@ class Transpiler:
         if t == "BreakStatement": return self.get_indent() + "break;"
         if t == "ContinueStatement": return self.get_indent() + "continue;"
         if t == "ReturnStatement":
-            arg = self.generate(node["argument"], no_paren=True) if node.get("argument") else ""
-            return self.get_indent() + "return " + arg + ";"
+            arg = self.generate(node.get("argument"), no_paren=True)
+            return self.get_indent() + f"return {arg};"
         if t == "AssignmentExpression": 
-            return self.generate(node['left']) + " = " + self.generate(node['right'], no_paren=True)
+            return f"{self.generate(node['left'], no_paren=True)} = {self.generate(node['right'], no_paren=True)}"
         if t == "BinaryExpression": 
-            left = self.generate(node['left'])
-            right = self.generate(node['right'])
-            op = node['operator']
-            if op == "%":
-                # Check if it might be a float (simple heuristic: look for float literals or common names)
-                # In a real compiler, we'd use the Checker's type info.
-                return "std::fmod(" + left + ", " + right + ")"
-            res = left + " " + op + " " + right
-            return res if no_paren else "(" + res + ")"
+            l, r, op = self.generate(node['left']), self.generate(node['right']), node['operator']
+            if op == "%=": return f"std::fmod({l}, {r})"
+            res = f"{l} {op} {r}"
+            return f"({res})" if not no_paren else res
         if t == "UnaryExpression":
-            op = node['operator']
-            arg = self.generate(node['argument'])
-            if op == "&": return "&(" + arg + ")"
-            return "(" + op + arg + ")"
+            op, arg = node['operator'], self.generate(node['argument'], no_paren=True)
+            if op == "&": return f"&({arg})"
+            return f"{op}{arg}"
         if t == "CallExpression": return self.gen_call(node)
-        if t == "MemberExpression": return self.generate(node['object']) + "." + self.mangle(node['property'])
-        if t == "IndexExpression": return self.generate(node['object']) + "[" + self.generate(node['index'], no_paren=True) + "]"
-        if t == "SliceExpression": return "fax_std::Array<decltype(" + self.generate(node['object']) + ")::value_type>(" + self.generate(node['object']) + ".begin() + " + self.generate(node['start']) + ", " + self.generate(node['object']) + ".begin() + " + self.generate(node['end']) + ")"
+        if t == "MemberExpression": 
+            obj = self.generate(node['object'], no_paren=True)
+            if node['object']['type'] in ["BinaryExpression", "UnaryExpression"]:
+                obj = "(" + obj + ")"
+            return f"{obj}.{self.mangle(node['property'])}"
+        if t == "IndexExpression": 
+            obj = self.generate(node['object'], no_paren=True)
+            if node['object']['type'] in ["BinaryExpression", "UnaryExpression"]:
+                obj = "(" + obj + ")"
+            return f"{obj}[{self.generate(node['index'], no_paren=True)} ]"
+        if t == "SliceExpression": 
+            obj = self.generate(node['object'], no_paren=True)
+            start = self.generate(node['start'], no_paren=True)
+            end = self.generate(node['end'], no_paren=True)
+            return f"fax_std::Array<decltype({obj})::value_type>({obj}.begin() + {start}, {obj}.begin() + {end})"
         if t == "Literal": return self.gen_literal(node)
         if t == "Identifier":
-            name = self.mangle(node["name"])
             if node["name"] == "self": return "(*this)"
-            # If it's a local variable (including shadowed), use it directly
-            if self.is_local(node["name"]):
-                return name
-            # If it's a global symbol and we're inside a function/block, prefix it
-            if name in self.user_symbols and self.current_indent >= 2:
-                return "fax_app::" + name
-            return name
+            m = self.mangle(node["name"])
+            if self.is_local(node["name"]): return m
+            if m in self.user_symbols and self.current_indent >= 2: return f"fax_app::{m}"
+            return m
         if t == "ArrayLiteral": 
-            return "{" + ", ".join([self.generate(e, no_paren=True) for e in node["elements"]]) + "}"
+            elems = ", ".join([self.generate(e, no_paren=True) for e in node["elements"]])
+            return "{" + elems + "}"
         if t == "StructDeclaration": return self.gen_struct(node)
-        if t == "ImportStatement": return self.gen_import(node)
-        
-        return "/* Unknown Node: " + str(t) + " */"
+        if t == "ImportStatement": return f'#include "{node["path"]}.hpp"'
+        return f"/* Unknown Node: {t} */"
 
     def gen_import(self, node):
-        return '#include "' + node["path"] + '.hpp"'
+        return f'#include "{node["path"]}.hpp"'
 
     def gen_literal(self, node):
         val = node["value"]
         if isinstance(val, str):
-            # Escape backslashes and other special characters for C++
-            escaped = val.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n').replace('\t', '\\t').replace('\r', '\\r')
-            return '"' + escaped + '"'
-        if isinstance(val, bool): return "true" if val else "false"
-        return str(val)
+            escaped = val.replace('\\', '\\').replace('"', '\"').replace('\n', '\n').replace('\t', '\t')
+            return f'"{escaped}"'
+        return "true" if val is True else "false" if val is False else str(val)
 
     def gen_program(self, node):
         header = "/**\n * @file output.cpp\n * @brief Generated by Fax-lang Polyglot Compiler\n */\n\n"
-        header += "#include \"fax_runtime.hpp\"\n"
-        header += "#include <cmath>\n"
+        header += '#include "fax_runtime.hpp"\n#include <cmath>\n'
+        imported = set()
         for stmt in node["body"]:
             if stmt["type"] == "ImportStatement":
-                header += self.generate(stmt) + "\n"
+                p = stmt["path"]
+                if p not in imported:
+                    header += self.gen_import(stmt) + "\n"
+                    imported.add(p)
         header += "\nnamespace fax_app {\n"
-        body = ""
+        decls = ""
         for stmt in node["body"]:
             if stmt["type"] in ["FunctionDeclaration", "StructDeclaration", "VariableDeclaration"]:
-                body += self.generate(stmt, 1) + "\n"
-        footer = "\n} // namespace fax_app\n\n"
-        footer += "int main(int argc, char* argv[]) {\n    try {\n"
+                decls += self.generate(stmt, 1) + "\n"
+        header += decls + "\n} // namespace fax_app\n\nint main(int argc, char* argv[]) {\n    try {\n"
         self.current_indent = 2
-        main_logic = ""
+        body = ""
         for stmt in node["body"]:
             if stmt["type"] not in ["FunctionDeclaration", "StructDeclaration", "ImportStatement", "VariableDeclaration"]:
                 if stmt["type"] == "ExpressionStatement" and \
                    stmt["expression"]["type"] == "CallExpression" and \
-                   stmt["expression"]["callee"].get("type") == "Identifier" and \
-                   stmt["expression"]["callee"].get("name") == "main":
-                    continue
-                main_logic += self.generate(stmt) + "\n"
-        if "main" in self.user_symbols:
-            main_logic += "        fax_app::main();\n"
-        footer += main_logic
-        footer += "        return 0;\n    } catch (const std::exception& e) {\n"
+                   stmt["expression"].get("callee")["name"] == "main": continue
+                body += self.generate(stmt) + "\n"
+        if "main" in self.user_symbols: body += "        fax_app::main();\n"
+        footer = "        return 0;\n    } catch (const std::exception& e) {\n"
         footer += "        std::cerr << \"[FATAL]: \" << e.what() << std::endl;\n"
-        footer += "        return 1;\n    }\n}\n"
+        footer += "        return 1;\n    }\n}"
         return header + body + footer
 
     def gen_struct(self, node):
-        code = "\n" + self.get_indent() + "struct " + self.mangle(node['name']) + " {\n"
+        code = f"\n{self.get_indent()}struct {self.mangle(node['name'])} {{\n"
         self.current_indent += 1
-        for field in node["fields"]:
-            code += self.get_indent() + self.map_type(field['type']) + " " + self.mangle(field['name']) + ";\n"
-        for method in node.get("methods", []):
-            code += self.generate(method) + "\n"
+        for f in node["fields"]:
+            ft = f.get('type') or f.get('field_type')
+            code += f"{self.get_indent()}{self.map_type(ft)} {self.mangle(f['name'])};\n"
+        for m in node.get("methods", []): code += self.generate(m) + "\n"
         self.current_indent -= 1
-        code += self.get_indent() + "};"
-        return code
+        return code + f"{self.get_indent()}}};"
 
     def gen_function(self, node):
-        ret = self.map_type(node["returnType"])
+        rt = node.get("returnType") or node.get("return_type", "void")
         name = self.mangle(node["name"])
         self.enter_scope()
         for p in node["params"]:
             self.add_local(p["name"])
-        params = ", ".join([self.map_type(p['type']) + " " + self.mangle(p['name']) for p in node["params"] if p["type"] != "self"])
-        code = self.get_indent() + ret + " " + name + "(" + params + ") "
+        params = ", ".join([f"{self.map_type(p.get('type') or p.get('param_type'))} {self.mangle(p['name'])}" 
+                           for p in node["params"] if p.get('type') != "self"])
+        code = f"\n{self.get_indent()}/** @brief {name} */\n{self.get_indent()}{self.map_type(rt)} {name}({params}) "
         code += self.generate(node["body"], self.current_indent)
         self.exit_scope()
-        return "\n" + self.get_indent() + "/** @brief " + name + " */\n" + code
+        return code
 
     def gen_block(self, node):
-        code = "{\n"
         self.enter_scope()
+        code = "{\n"
         self.current_indent += 1
-        for stmt in node["body"]:
-            code += self.generate(stmt) + "\n"
+        for s in node["body"]: code += self.generate(s) + "\n"
         self.current_indent -= 1
         self.exit_scope()
-        code += self.get_indent() + "}"
-        return code
+        return code + self.get_indent() + "}"
 
     def gen_variable(self, node):
         self.add_local(node["identifier"])
-        dtype = self.map_type(node["dataType"])
-        prefix = "const " if node.get("isConstant") else ""
-        init = " = " + self.generate(node['initializer'], no_paren=True) if node.get("initializer") else ""
-        return self.get_indent() + prefix + dtype + " " + self.mangle(node['identifier']) + init + ";"
+        dt = node.get("dataType") or node.get("data_type", "auto")
+        prefix = "const " if node.get("isConstant") or node.get("is_constant") else ""
+        init = f" = {self.generate(node['initializer'], no_paren=True)}" if node.get("initializer") else ""
+        return f"{self.get_indent()}{prefix}{self.map_type(dt)} {self.mangle(node['identifier'])}{init};"
 
     def gen_if(self, node):
-        code = self.get_indent() + "if (" + self.generate(node['test'], no_paren=True) + ") "
-        code += self.generate(node["consequent"], self.current_indent).strip()
-        if node.get("alternate"):
-            code += " else "
-            code += self.generate(node["alternate"], self.current_indent).strip()
-        return code
+        test = self.generate(node['test'], no_paren=True)
+        cons = self.generate(node["consequent"], self.current_indent).strip()
+        alt = f' else {self.generate(node["alternate"], self.current_indent).strip()}' if node.get("alternate") else ""
+        return f"{self.get_indent()}if ({test}) {cons}{alt}"
 
     def gen_while(self, node):
-        return self.get_indent() + "while (" + self.generate(node['test'], no_paren=True) + ") " + self.generate(node['body'], self.current_indent).strip()
+        test = self.generate(node['test'], no_paren=True)
+        return f"{self.get_indent()}while ({test}) {self.generate(node['body'], self.current_indent).strip()}"
 
     def gen_for(self, node):
-        init = self.generate(node["init"], no_paren=True).strip().replace(";", "") if node.get("init") else ""
-        test = self.generate(node["test"], no_paren=True) if node.get("test") else ""
-        update = self.generate(node["update"], no_paren=True) if node.get("update") else ""
-        return self.get_indent() + "for (" + init + "; " + test + "; " + update + ") " + self.generate(node['body'], self.current_indent).strip()
+        i = self.generate(node["init"], no_paren=True).strip().replace(";", "") if node.get("init") else ""
+        t = self.generate(node["test"], no_paren=True) if node.get("test") else ""
+        u = self.generate(node["update"], no_paren=True) if node.get("update") else ""
+        return f"{self.get_indent()}for ({i}; {t}; {u}) {self.generate(node['body'], self.current_indent).strip()}"
 
     def gen_call(self, node):
-        callee = self.generate(node["callee"])
+        callee = self.generate(node["callee"], no_paren=True)
         args = [self.generate(a, no_paren=True) for a in node["arguments"]]
-        if callee == "println":
-            return "fax_std::println(" + ", ".join(args) + ")"
-        if callee in self.user_symbols and self.current_indent >= 2:
-            return "fax_app::" + callee + "(" + ", ".join(args) + ")"
-        return callee + "(" + ", ".join(args) + ")"
+        if callee == "println": return f"fax_std::println({', '.join(args)})"
+        if callee in self.user_symbols and self.current_indent >= 2: return f"fax_app::{callee}({', '.join(args)})"
+        return f"{callee}({', '.join(args)})"
 
-    def map_type(self, fax_type):
-        if not fax_type: return "auto"
-        if fax_type.startswith("ptr<"): return "fax_std::Ptr<" + self.map_type(fax_type[4:-1]) + ">"
-        if fax_type.startswith("ref<"): return self.map_type(fax_type[4:-1]) + "&"
-        if fax_type.endswith("[]"): return "fax_std::Array<" + self.map_type(fax_type[:-2]) + ">"
+    def map_type(self, t):
+        if not t: return "auto"
+        t = t.strip()
+        if t.endswith("[]"): return f"fax_std::Array<{self.map_type(t[:-2])}>"
+        if t.startswith("ptr<") and t.endswith(">"): return f"fax_std::Ptr<{self.map_type(t[4:-1])}>"
+        if t.startswith("ref<") and t.endswith(">"): return f"{self.map_type(t[4:-1])}&"
         mapping = {"int": "int", "float": "float", "bool": "bool", "string": "std::string", "void": "void"}
-        return mapping.get(fax_type, fax_type)
+        m = self.mangle(t)
+        return f"fax_app::{m}" if m in self.user_symbols else mapping.get(t, m)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2: sys.exit(1)
